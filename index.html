@@ -597,13 +597,103 @@
             color: var(--green);
         }
 
+        /* ── MOBILE OFFCANVAS SIDEBAR ─────────────────────────────── */
+        .mobile-topbar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .mobile-topbar .brand-name {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--gold);
+            letter-spacing: 1px;
+        }
+        .hamburger-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: 7px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: border-color .15s, color .15s;
+        }
+        .hamburger-btn:hover { border-color: var(--muted); color: var(--text); }
+
+        /* Offcanvas overrides */
+        .offcanvas {
+            background: var(--surface) !important;
+            border-right: 1px solid var(--border) !important;
+            width: 280px !important;
+        }
+        .offcanvas-header {
+            border-bottom: 1px solid var(--border);
+            padding: 18px 20px 14px;
+        }
+        .offcanvas-header .offcanvas-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            color: var(--gold);
+            letter-spacing: 1px;
+        }
+        .offcanvas-header .btn-close { filter: invert(1) brightness(0.6); }
+        .offcanvas-body { padding: 0; overflow-y: auto; }
+
         @media (max-width: 640px) {
             #sidebar { display: none; }
+            .mobile-topbar { display: flex; }
+            #app { flex-direction: column; }
             #main, #catalog-page { padding: 18px 16px; }
         }
     </style>
 </head>
 <body>
+
+<!-- MOBILE TOPBAR -->
+<div class="mobile-topbar">
+    <span class="brand-name"><i class="bi bi-lightning-fill" style="font-size:17px;vertical-align:middle;margin-right:3px;"></i>IRON LOG</span>
+    <button class="hamburger-btn" data-bs-toggle="offcanvas" data-bs-target="#sidebar-offcanvas" aria-controls="sidebar-offcanvas">
+        <i class="bi bi-list"></i>
+    </button>
+</div>
+
+<!-- OFFCANVAS SIDEBAR (mobile) -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar-offcanvas" aria-labelledby="offcanvas-label">
+    <div class="offcanvas-header">
+        <span class="offcanvas-title" id="offcanvas-label"><i class="bi bi-lightning-fill" style="font-size:17px;vertical-align:middle;margin-right:4px;"></i>IRON LOG</span>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body" id="offcanvas-body">
+        <!-- Workout Library -->
+        <div class="sidebar-section">
+            <div class="month-header" id="oc-library-toggle">
+                <span><i class="bi bi-journal-bookmark me-2"></i>Workout Library</span>
+                <i class="bi bi-chevron-right chevron" id="oc-library-chevron"></i>
+            </div>
+            <div class="week-list" id="oc-library-menu">
+                <div class="week-item" id="oc-open-catalog">
+                    <i class="bi bi-grid" style="font-size:12px;"></i>
+                    <span>Exercise Catalog</span>
+                    <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
+                </div>
+            </div>
+        </div>
+        <div class="month-nav" id="offcanvas-month-nav"></div>
+    </div>
+</div>
 
 <div id="app">
     <!-- SIDEBAR -->
@@ -640,7 +730,7 @@
         <div id="days-container"></div>
     </main>
 
-    <!-- CATALOG PAGE — static HTML, JS only for filter tabs -->
+<!-- CATALOG PAGE — static HTML, JS only for filter tabs -->
     <section id="catalog-page">
         <div class="catalog-header">
             <button class="back-btn" id="catalog-back">
@@ -677,7 +767,7 @@
                 <div class="catalog-section-line"></div>
             </div>
             <div class="exercise-grid">
-                <div  class="exercise-card"><div class="exercise-card-name">Barbell Bench Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></a>
+                <div class="exercise-card"><div class="exercise-card-name">Barbell Bench Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Incline Bench Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Decline Bench Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Dumbbell Fly</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Dumbbells</span></div></div>
@@ -947,217 +1037,227 @@
 <script>
 
 
-    // ════════════════════════════════════════════
-    //   TYPES & STORAGE
-    // ════════════════════════════════════════════
-    const STORAGE_KEY = 'ironlog_v1';
+// ════════════════════════════════════════════
+//   TYPES & STORAGE
+// ════════════════════════════════════════════
+const STORAGE_KEY = 'ironlog_v1';
 
-    function loadData() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-        catch { return {}; }
-    }
-    function saveData(data) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
+function loadData() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch { return {}; }
+}
+function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 
-    // ════════════════════════════════════════════
-    //   DATE HELPERS
-    // ════════════════════════════════════════════
-    const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+// ════════════════════════════════════════════
+//   DATE HELPERS
+// ════════════════════════════════════════════
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    function today() {
-        const d = new Date();
-        return ymd(d.getFullYear(), d.getMonth(), d.getDate());
-    }
-    function ymd(y, m, d) {
-        return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    }
-    function parseYmd(s) {
-        const [y,m,d] = s.split('-').map(Number);
-        return new Date(y, m-1, d);
-    }
-    function daysInMonth(year, month) {
-        return new Date(year, month+1, 0).getDate();
-    }
-    function getWeeks(year, month) {
-        const total = daysInMonth(year, month);
-        const weeks = [];
-        let week = [];
-        for (let d = 1; d <= total; d++) {
-            const date = new Date(year, month, d);
-            week.push({ day: d, dow: date.getDay(), date: ymd(year, month, d) });
-            if (date.getDay() === 6 || d === total) {
-                weeks.push(week);
-                week = [];
-            }
+function today() {
+    const d = new Date();
+    return ymd(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function ymd(y, m, d) {
+    return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function parseYmd(s) {
+    const [y,m,d] = s.split('-').map(Number);
+    return new Date(y, m-1, d);
+}
+function daysInMonth(year, month) {
+    return new Date(year, month+1, 0).getDate();
+}
+function getWeeks(year, month) {
+    const total = daysInMonth(year, month);
+    const weeks = [];
+    let week = [];
+    for (let d = 1; d <= total; d++) {
+        const date = new Date(year, month, d);
+        week.push({ day: d, dow: date.getDay(), date: ymd(year, month, d) });
+        if (date.getDay() === 6 || d === total) {
+            weeks.push(week);
+            week = [];
         }
-        return weeks;
     }
+    return weeks;
+}
 
-    // ════════════════════════════════════════════
-    //   STATE
-    // ════════════════════════════════════════════
-    const now = new Date();
-    let state = {
-        year: now.getFullYear(),
-        month: now.getMonth(),
-        week: null,
-        openDays: new Set(),
-        modalDay: null,
-        editId: null,
-        view: 'tracker', // 'tracker' | 'catalog'
-    };
+// ════════════════════════════════════════════
+//   STATE
+// ════════════════════════════════════════════
+const now = new Date();
+let state = {
+    year: now.getFullYear(),
+    month: now.getMonth(),
+    week: null,
+    openDays: new Set(),
+    modalDay: null,
+    editId: null,
+    view: 'tracker', // 'tracker' | 'catalog'
+};
 
-    (function initWeek() {
-        const weeks = getWeeks(state.year, state.month);
-        const td = today();
-        for (let i = 0; i < weeks.length; i++) {
-            if (weeks[i].some(d => d.date === td)) { state.week = i; break; }
-        }
-        if (state.week === null) state.week = 0;
-        state.openDays.add(td);
-    })();
-
-    // ════════════════════════════════════════════
-    //   VIEW SWITCHING
-    // ════════════════════════════════════════════
-    function showView(view) {
-        state.view = view;
-        document.getElementById('main').style.display = view === 'tracker' ? 'block' : 'none';
-        document.getElementById('catalog-page').style.display = view === 'catalog' ? 'block' : 'none';
+(function initWeek() {
+    const weeks = getWeeks(state.year, state.month);
+    const td = today();
+    for (let i = 0; i < weeks.length; i++) {
+        if (weeks[i].some(d => d.date === td)) { state.week = i; break; }
     }
+    if (state.week === null) state.week = 0;
+    state.openDays.add(td);
+})();
 
-    // ════════════════════════════════════════════
-    //   SIDEBAR RENDER
-    // ════════════════════════════════════════════
-    function renderSidebar() {
-        const nav = document.getElementById('month-nav');
-        const data = loadData();
+// ════════════════════════════════════════════
+//   VIEW SWITCHING
+// ════════════════════════════════════════════
+function showView(view) {
+    state.view = view;
+    document.getElementById('main').style.display = view === 'tracker' ? 'block' : 'none';
+    document.getElementById('catalog-page').style.display = view === 'catalog' ? 'block' : 'none';
+}
 
-        const months = [];
-        const curYear = now.getFullYear();
-        for (let m = 0; m < 12; m++) months.push({ year: curYear, month: m });
+// ════════════════════════════════════════════
+//   SIDEBAR RENDER
+// ════════════════════════════════════════════
+function buildMonthNav(navEl, closeOffcanvas) {
+    const data = loadData();
+    const months = [];
+    const curYear = now.getFullYear();
+    for (let m = 0; m < 12; m++) months.push({ year: curYear, month: m });
 
-        nav.innerHTML = '';
-        months.forEach(({ year, month }) => {
-            const weeks = getWeeks(year, month);
-            const isActiveMonth = state.year === year && state.month === month;
+    navEl.innerHTML = '';
+    months.forEach(({ year, month }) => {
+        const weeks = getWeeks(year, month);
+        const isActiveMonth = state.year === year && state.month === month;
 
-            let monthCount = 0;
-            weeks.forEach(wk => wk.forEach(d => {
-                monthCount += (data[d.date] || []).length;
-            }));
+        const hdr = document.createElement('div');
+        hdr.className = 'month-header' + (isActiveMonth ? ' active open' : '');
+        hdr.innerHTML = `<span>${MONTHS[month]} ${year}</span><i class="bi bi-chevron-right chevron"></i>`;
+        hdr.addEventListener('click', () => {
+            state.year = year;
+            state.month = month;
+            state.week = 0;
+            state.openDays.clear();
+            showView('tracker');
+            if (closeOffcanvas) closeOffcanvas();
+            renderSidebar();
+            renderMain();
+        });
+        navEl.appendChild(hdr);
 
-            const hdr = document.createElement('div');
-            hdr.className = 'month-header' + (isActiveMonth ? ' active open' : '');
-            hdr.innerHTML = `<span>${MONTHS[month]} ${year}</span><i class="bi bi-chevron-right chevron"></i>`;
-            hdr.addEventListener('click', () => {
-                state.year = year;
-                state.month = month;
-                state.week = 0;
-                state.openDays.clear();
-                showView('tracker');
-                renderSidebar();
-                renderMain();
-            });
-            nav.appendChild(hdr);
+        const wkList = document.createElement('div');
+        wkList.className = 'week-list' + (isActiveMonth ? ' open' : '');
 
-            const wkList = document.createElement('div');
-            wkList.className = 'week-list' + (isActiveMonth ? ' open' : '');
+        weeks.forEach((wk, wi) => {
+            const first = wk[0], last = wk[wk.length-1];
+            const wkCount = wk.reduce((s, d) => s + (data[d.date] || []).length, 0);
+            const isActiveWeek = isActiveMonth && state.week === wi;
 
-            weeks.forEach((wk, wi) => {
-                const first = wk[0], last = wk[wk.length-1];
-                const wkCount = wk.reduce((s, d) => s + (data[d.date] || []).length, 0);
-                const isActiveWeek = isActiveMonth && state.week === wi;
-
-                const item = document.createElement('div');
-                item.className = 'week-item' + (isActiveWeek ? ' active' : '');
-                item.innerHTML = `
+            const item = document.createElement('div');
+            item.className = 'week-item' + (isActiveWeek ? ' active' : '');
+            item.innerHTML = `
         <i class="bi bi-calendar3-week" style="font-size:12px;"></i>
         <span>${SHORT_MONTHS[first.day > 20 && last.day < 8 ? month+1 : month]} ${first.day} – ${last.day}</span>
         ${wkCount ? `<span class="week-badge">${wkCount}</span>` : ''}
       `;
-                item.addEventListener('click', () => {
-                    state.year = year;
-                    state.month = month;
-                    state.week = wi;
-                    state.openDays.clear();
-                    const td = today();
-                    if (wk.some(d => d.date === td)) state.openDays.add(td);
-                    showView('tracker');
-                    renderSidebar();
-                    renderMain();
-                });
-                wkList.appendChild(item);
+            item.addEventListener('click', () => {
+                state.year = year;
+                state.month = month;
+                state.week = wi;
+                state.openDays.clear();
+                const td = today();
+                if (wk.some(d => d.date === td)) state.openDays.add(td);
+                showView('tracker');
+                if (closeOffcanvas) closeOffcanvas();
+                renderSidebar();
+                renderMain();
             });
-
-            nav.appendChild(wkList);
+            wkList.appendChild(item);
         });
-    }
 
-    // Library dropdown toggle
-    document.getElementById('library-toggle').addEventListener('click', () => {
-        const menu = document.getElementById('library-menu');
-        const chevron = document.getElementById('library-chevron');
+        navEl.appendChild(wkList);
+    });
+}
+
+function renderSidebar() {
+    buildMonthNav(document.getElementById('month-nav'), null);
+    buildMonthNav(document.getElementById('offcanvas-month-nav'), () => {
+        bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide();
+    });
+}
+
+// Library dropdown toggle — desktop + offcanvas
+function wireLibraryToggle(toggleId, menuId, chevronId) {
+    document.getElementById(toggleId).addEventListener('click', () => {
+        const menu = document.getElementById(menuId);
+        const chevron = document.getElementById(chevronId);
         const isOpen = menu.classList.contains('open');
         menu.classList.toggle('open', !isOpen);
         chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
     });
+}
+wireLibraryToggle('library-toggle', 'library-menu', 'library-chevron');
+wireLibraryToggle('oc-library-toggle', 'oc-library-menu', 'oc-library-chevron');
 
-    document.getElementById('open-catalog').addEventListener('click', () => {
-        showView('catalog');
-    });
+document.getElementById('open-catalog').addEventListener('click', () => {
+    showView('catalog');
+});
+document.getElementById('oc-open-catalog').addEventListener('click', () => {
+    bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide();
+    showView('catalog');
+});
 
-    document.getElementById('catalog-back').addEventListener('click', () => {
-        showView('tracker');
-    });
+document.getElementById('catalog-back').addEventListener('click', () => {
+    showView('tracker');
+});
 
 
 
-    // ════════════════════════════════════════════
-    //   CATALOG FILTER
-    // ════════════════════════════════════════════
-    document.querySelectorAll('.catalog-filters .filter-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.catalog-filters .filter-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            const filter = tab.dataset.filter;
-            document.querySelectorAll('#catalog-page .catalog-section').forEach(sec => {
-                sec.style.display = (filter === 'all' || sec.dataset.muscle === filter) ? '' : 'none';
-            });
+// ════════════════════════════════════════════
+//   CATALOG FILTER
+// ════════════════════════════════════════════
+document.querySelectorAll('.catalog-filters .filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.catalog-filters .filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const filter = tab.dataset.filter;
+        document.querySelectorAll('#catalog-page .catalog-section').forEach(sec => {
+            sec.style.display = (filter === 'all' || sec.dataset.muscle === filter) ? '' : 'none';
         });
     });
+});
 
-    // ════════════════════════════════════════════
-    //   MAIN RENDER
-    // ════════════════════════════════════════════
-    function renderMain() {
-        const data = loadData();
-        const weeks = getWeeks(state.year, state.month);
-        const week = weeks[state.week] || weeks[0];
-        const td = today();
+// ════════════════════════════════════════════
+//   MAIN RENDER
+// ════════════════════════════════════════════
+function renderMain() {
+    const data = loadData();
+    const weeks = getWeeks(state.year, state.month);
+    const week = weeks[state.week] || weeks[0];
+    const td = today();
 
-        const first = week[0], last = week[week.length-1];
-        document.getElementById('view-title').innerHTML =
-            `${MONTHS[state.month]} ${state.year} <span style="color:var(--muted);font-weight:400;font-size:22px;">— Week ${state.week+1}</span>`;
-        document.getElementById('view-sub').textContent =
-            `${DAYS[first.dow]}, ${SHORT_MONTHS[state.month]} ${first.day} – ${DAYS[last.dow]}, ${SHORT_MONTHS[state.month]} ${last.day}`;
+    const first = week[0], last = week[week.length-1];
+    document.getElementById('view-title').innerHTML =
+        `${MONTHS[state.month]} ${state.year} <span style="color:var(--muted);font-weight:400;font-size:22px;">— Week ${state.week+1}</span>`;
+    document.getElementById('view-sub').textContent =
+        `${DAYS[first.dow]}, ${SHORT_MONTHS[state.month]} ${first.day} – ${DAYS[last.dow]}, ${SHORT_MONTHS[state.month]} ${last.day}`;
 
-        const container = document.getElementById('days-container');
-        container.innerHTML = '';
+    const container = document.getElementById('days-container');
+    container.innerHTML = '';
 
-        week.forEach(({ day, dow, date }) => {
-            const workouts = data[date] || [];
-            const isToday = date === td;
-            const isOpen  = state.openDays.has(date);
-            const muscles = [...new Set(workouts.map(w => w.muscle).filter(Boolean))];
+    week.forEach(({ day, dow, date }) => {
+        const workouts = data[date] || [];
+        const isToday = date === td;
+        const isOpen  = state.openDays.has(date);
+        const muscles = [...new Set(workouts.map(w => w.muscle).filter(Boolean))];
 
-            const card = document.createElement('div');
-            card.className = 'day-card' + (isToday ? ' today' : '');
+        const card = document.createElement('div');
+        card.className = 'day-card' + (isToday ? ' today' : '');
 
-            card.innerHTML = `
+        card.innerHTML = `
       <div class="day-card-header">
         <div class="day-num">${String(day).padStart(2,'0')}</div>
         <div class="day-label">
@@ -1176,30 +1276,30 @@
       <div class="day-body ${isOpen ? 'open' : ''}" id="body-${date}"></div>
     `;
 
-            card.querySelector('.day-toggle-btn').addEventListener('click', () => {
-                if (state.openDays.has(date)) state.openDays.delete(date);
-                else state.openDays.add(date);
-                renderMain();
-            });
-
-            container.appendChild(card);
-            if (isOpen) renderDayBody(date, workouts);
+        card.querySelector('.day-toggle-btn').addEventListener('click', () => {
+            if (state.openDays.has(date)) state.openDays.delete(date);
+            else state.openDays.add(date);
+            renderMain();
         });
+
+        container.appendChild(card);
+        if (isOpen) renderDayBody(date, workouts);
+    });
+}
+
+function renderDayBody(date, workouts) {
+    const body = document.getElementById(`body-${date}`);
+    if (!body) return;
+    body.innerHTML = '';
+
+    if (workouts.length === 0) {
+        body.innerHTML = `<p class="empty-day"><i class="bi bi-journal-x me-2"></i>No workouts yet — add your first one below.</p>`;
     }
 
-    function renderDayBody(date, workouts) {
-        const body = document.getElementById(`body-${date}`);
-        if (!body) return;
-        body.innerHTML = '';
-
-        if (workouts.length === 0) {
-            body.innerHTML = `<p class="empty-day"><i class="bi bi-journal-x me-2"></i>No workouts yet — add your first one below.</p>`;
-        }
-
-        workouts.forEach(w => {
-            const entry = document.createElement('div');
-            entry.className = 'workout-entry';
-            const setsRows = w.sets.map((s, i) => `
+    workouts.forEach(w => {
+        const entry = document.createElement('div');
+        entry.className = 'workout-entry';
+        const setsRows = w.sets.map((s, i) => `
       <tr>
         <td class="set-num">${i+1}</td>
         <td class="set-reps">${s.reps} rep${s.reps!=1?'s':''}</td>
@@ -1209,7 +1309,7 @@
       </tr>
     `).join('');
 
-            entry.innerHTML = `
+        entry.innerHTML = `
       <div class="workout-entry-header">
         <div class="w-name">${escHtml(w.name)}</div>
         ${w.muscle ? `<span class="w-muscle">${escHtml(w.muscle)}</span>` : ''}
@@ -1228,153 +1328,153 @@
       </table>
     `;
 
-            entry.querySelector('.edit-workout-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                openEditModal(date, w.id);
-            });
-            entry.querySelector('.delete-workout-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteWorkout(date, w.id);
-            });
-
-            body.appendChild(entry);
+        entry.querySelector('.edit-workout-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditModal(date, w.id);
+        });
+        entry.querySelector('.delete-workout-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteWorkout(date, w.id);
         });
 
-        const logBtn = document.createElement('button');
-        logBtn.className = 'log-btn';
-        logBtn.innerHTML = `<i class="bi bi-plus-circle me-2"></i>Log Workout`;
-        logBtn.addEventListener('click', () => openModal(date));
-        body.appendChild(logBtn);
-    }
+        body.appendChild(entry);
+    });
 
-    // ════════════════════════════════════════════
-    //   MODAL
-    // ════════════════════════════════════════════
-    const logModal = new bootstrap.Modal(document.getElementById('log-modal'));
-    let setCount = 0;
+    const logBtn = document.createElement('button');
+    logBtn.className = 'log-btn';
+    logBtn.innerHTML = `<i class="bi bi-plus-circle me-2"></i>Log Workout`;
+    logBtn.addEventListener('click', () => openModal(date));
+    body.appendChild(logBtn);
+}
 
-    function openModal(date) {
-        state.modalDay = date;
-        state.editId = null;
-        document.getElementById('workout-name').value = '';
-        document.getElementById('muscle-group').value = '';
-        document.getElementById('log-modal-title').textContent = `Log Workout — ${formatDate(date)}`;
-        document.getElementById('save-workout-btn').innerHTML = `<i class="bi bi-check2 me-1"></i> Save Workout`;
-        setCount = 0;
-        document.getElementById('sets-builder').innerHTML = '';
-        addSetRow();
-        logModal.show();
-    }
+// ════════════════════════════════════════════
+//   MODAL
+// ════════════════════════════════════════════
+const logModal = new bootstrap.Modal(document.getElementById('log-modal'));
+let setCount = 0;
 
-    function openEditModal(date, id) {
-        const data = loadData();
-        const workout = (data[date] || []).find(w => w.id === id);
-        if (!workout) return;
+function openModal(date) {
+    state.modalDay = date;
+    state.editId = null;
+    document.getElementById('workout-name').value = '';
+    document.getElementById('muscle-group').value = '';
+    document.getElementById('log-modal-title').textContent = `Log Workout — ${formatDate(date)}`;
+    document.getElementById('save-workout-btn').innerHTML = `<i class="bi bi-check2 me-1"></i> Save Workout`;
+    setCount = 0;
+    document.getElementById('sets-builder').innerHTML = '';
+    addSetRow();
+    logModal.show();
+}
 
-        state.modalDay = date;
-        state.editId = id;
-        document.getElementById('workout-name').value = workout.name;
-        document.getElementById('muscle-group').value = workout.muscle || '';
-        document.getElementById('log-modal-title').textContent = `Edit Workout — ${formatDate(date)}`;
-        document.getElementById('save-workout-btn').innerHTML = `<i class="bi bi-check2 me-1"></i> Update Workout`;
+function openEditModal(date, id) {
+    const data = loadData();
+    const workout = (data[date] || []).find(w => w.id === id);
+    if (!workout) return;
 
-        setCount = 0;
-        document.getElementById('sets-builder').innerHTML = '';
-        workout.sets.forEach(s => addSetRow(s.reps, s.weight));
-        logModal.show();
-    }
+    state.modalDay = date;
+    state.editId = id;
+    document.getElementById('workout-name').value = workout.name;
+    document.getElementById('muscle-group').value = workout.muscle || '';
+    document.getElementById('log-modal-title').textContent = `Edit Workout — ${formatDate(date)}`;
+    document.getElementById('save-workout-btn').innerHTML = `<i class="bi bi-check2 me-1"></i> Update Workout`;
 
-    function addSetRow(prefillReps, prefillWeight) {
-        setCount++;
-        const builder = document.getElementById('sets-builder');
-        const row = document.createElement('div');
-        row.className = 'set-row';
-        row.dataset.setIndex = setCount;
-        row.innerHTML = `
+    setCount = 0;
+    document.getElementById('sets-builder').innerHTML = '';
+    workout.sets.forEach(s => addSetRow(s.reps, s.weight));
+    logModal.show();
+}
+
+function addSetRow(prefillReps, prefillWeight) {
+    setCount++;
+    const builder = document.getElementById('sets-builder');
+    const row = document.createElement('div');
+    row.className = 'set-row';
+    row.dataset.setIndex = setCount;
+    row.innerHTML = `
     <div class="set-row-num">${setCount}</div>
     <input type="number" class="form-control form-control-sm" placeholder="Reps" min="1" data-field="reps" value="${prefillReps ?? ''}"/>
     <input type="number" class="form-control form-control-sm" placeholder="Weight (lbs)" min="0" step="0.5" data-field="weight" value="${prefillWeight ?? ''}"/>
     <button class="remove-set-btn" title="Remove set"><i class="bi bi-x-lg"></i></button>
   `;
-        row.querySelector('.remove-set-btn').addEventListener('click', () => {
-            row.remove();
-            renumberSets();
-        });
-        builder.appendChild(row);
+    row.querySelector('.remove-set-btn').addEventListener('click', () => {
+        row.remove();
+        renumberSets();
+    });
+    builder.appendChild(row);
+}
+
+function renumberSets() {
+    document.querySelectorAll('#sets-builder .set-row').forEach((r, i) => {
+        r.querySelector('.set-row-num').textContent = i + 1;
+    });
+}
+
+document.getElementById('add-set-btn').addEventListener('click', addSetRow);
+
+document.getElementById('save-workout-btn').addEventListener('click', () => {
+    const name   = document.getElementById('workout-name').value.trim();
+    const muscle = document.getElementById('muscle-group').value;
+
+    if (!name) {
+        document.getElementById('workout-name').focus();
+        document.getElementById('workout-name').classList.add('is-invalid');
+        return;
     }
+    document.getElementById('workout-name').classList.remove('is-invalid');
 
-    function renumberSets() {
-        document.querySelectorAll('#sets-builder .set-row').forEach((r, i) => {
-            r.querySelector('.set-row-num').textContent = i + 1;
-        });
-    }
-
-    document.getElementById('add-set-btn').addEventListener('click', addSetRow);
-
-    document.getElementById('save-workout-btn').addEventListener('click', () => {
-        const name   = document.getElementById('workout-name').value.trim();
-        const muscle = document.getElementById('muscle-group').value;
-
-        if (!name) {
-            document.getElementById('workout-name').focus();
-            document.getElementById('workout-name').classList.add('is-invalid');
-            return;
-        }
-        document.getElementById('workout-name').classList.remove('is-invalid');
-
-        const setRows = document.querySelectorAll('#sets-builder .set-row');
-        const sets = [];
-        setRows.forEach(row => {
-            const reps   = parseInt(row.querySelector('[data-field="reps"]').value) || 0;
-            const weight = parseFloat(row.querySelector('[data-field="weight"]').value) || null;
-            sets.push({ reps: reps || 1, weight });
-        });
-
-        const data = loadData();
-        if (!data[state.modalDay]) data[state.modalDay] = [];
-
-        if (state.editId) {
-            const idx = data[state.modalDay].findIndex(w => w.id === state.editId);
-            if (idx !== -1) {
-                data[state.modalDay][idx] = { ...data[state.modalDay][idx], name, muscle, sets };
-            }
-        } else {
-            const workout = { id: Date.now().toString(), name, muscle, sets };
-            data[state.modalDay].push(workout);
-        }
-        saveData(data);
-        logModal.hide();
-        state.openDays.add(state.modalDay);
-        renderSidebar();
-        renderMain();
+    const setRows = document.querySelectorAll('#sets-builder .set-row');
+    const sets = [];
+    setRows.forEach(row => {
+        const reps   = parseInt(row.querySelector('[data-field="reps"]').value) || 0;
+        const weight = parseFloat(row.querySelector('[data-field="weight"]').value) || null;
+        sets.push({ reps: reps || 1, weight });
     });
 
-    function deleteWorkout(date, id) {
-        const data = loadData();
-        if (!data[date]) return;
-        data[date] = data[date].filter(w => w.id !== id);
-        if (data[date].length === 0) delete data[date];
-        saveData(data);
-        renderSidebar();
-        renderMain();
-    }
+    const data = loadData();
+    if (!data[state.modalDay]) data[state.modalDay] = [];
 
-    // ════════════════════════════════════════════
-    //   UTILS
-    // ════════════════════════════════════════════
-    function escHtml(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    if (state.editId) {
+        const idx = data[state.modalDay].findIndex(w => w.id === state.editId);
+        if (idx !== -1) {
+            data[state.modalDay][idx] = { ...data[state.modalDay][idx], name, muscle, sets };
+        }
+    } else {
+        const workout = { id: Date.now().toString(), name, muscle, sets };
+        data[state.modalDay].push(workout);
     }
-    function formatDate(ymdStr) {
-        const d = parseYmd(ymdStr);
-        return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
-    }
-
-    // ════════════════════════════════════════════
-    //   INIT
-    // ════════════════════════════════════════════
+    saveData(data);
+    logModal.hide();
+    state.openDays.add(state.modalDay);
     renderSidebar();
     renderMain();
+});
+
+function deleteWorkout(date, id) {
+    const data = loadData();
+    if (!data[date]) return;
+    data[date] = data[date].filter(w => w.id !== id);
+    if (data[date].length === 0) delete data[date];
+    saveData(data);
+    renderSidebar();
+    renderMain();
+}
+
+// ════════════════════════════════════════════
+//   UTILS
+// ════════════════════════════════════════════
+function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatDate(ymdStr) {
+    const d = parseYmd(ymdStr);
+    return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
+}
+
+// ════════════════════════════════════════════
+//   INIT
+// ════════════════════════════════════════════
+renderSidebar();
+renderMain();
 </script>
 </body>
 </html>
