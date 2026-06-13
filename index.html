@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 
     <style>
@@ -658,6 +659,241 @@
             #app { flex-direction: column; }
             #main, #catalog-page { padding: 18px 16px; }
         }
+
+        /* ── WEIGHT TRACKER PAGE ─────────────────────────────── */
+        #weight-page { display: none; flex: 1; overflow-y: auto; padding: 32px 36px; max-width: 860px; }
+
+        .wt-header {
+            margin-bottom: 28px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .wt-header .back-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: 7px;
+            padding: 6px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color .15s, color .15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            white-space: nowrap;
+        }
+        .wt-header .back-btn:hover { border-color: var(--muted); color: var(--text); }
+        .wt-title-block { flex: 1; }
+        .wt-title-block h2 {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 800;
+            font-size: 32px;
+            letter-spacing: .5px;
+            margin: 0 0 4px;
+        }
+        .wt-title-block p { color: var(--text-dim); margin: 0; font-size: 13px; }
+
+        /* stat cards */
+        .wt-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .wt-stat {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+        }
+        .wt-stat-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+        .wt-stat-value {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 800;
+            font-size: 26px;
+            color: var(--text);
+            line-height: 1;
+        }
+        .wt-stat-value.positive { color: var(--green); }
+        .wt-stat-value.negative { color: var(--red); }
+        .wt-stat-unit {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-left: 3px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+
+        /* chart card */
+        .wt-chart-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .wt-chart-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .wt-chart-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            color: var(--text);
+        }
+        .wt-toolbar-right { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* range + unit toggles */
+        .wt-toggle-group {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            overflow: hidden;
+        }
+        .wt-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .3px;
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+        }
+        .wt-toggle-btn.active {
+            background: var(--gold);
+            color: #0D0F12;
+        }
+        .wt-toggle-btn:not(:last-child) { border-right: 1px solid var(--border); }
+
+        /* chart canvas wrapper */
+        .wt-chart-wrap { position: relative; height: 260px; }
+
+        /* log form */
+        .wt-log-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .wt-log-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+        .wt-log-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .wt-log-row .wt-field { flex: 1; min-width: 120px; }
+        .wt-log-btn {
+            background: var(--gold);
+            color: #0D0F12;
+            border: none;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: .5px;
+            padding: 9px 22px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: background .15s;
+            white-space: nowrap;
+        }
+        .wt-log-btn:hover { background: #f5c44a; }
+
+        /* history table */
+        .wt-history-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .wt-history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .wt-history-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+        }
+        .wt-history-table { width: 100%; border-collapse: collapse; }
+        .wt-history-table th {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 8px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .wt-history-table td {
+            padding: 9px 18px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(44,49,58,.5);
+            vertical-align: middle;
+        }
+        .wt-history-table tr:last-child td { border-bottom: none; }
+        .wt-history-table td:first-child { color: var(--text-dim); }
+        .wt-history-table td:nth-child(2) {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--gold);
+        }
+        .wt-delta { font-size: 12px; font-weight: 600; }
+        .wt-delta.up { color: var(--red); }
+        .wt-delta.down { color: var(--green); }
+        .wt-delete-entry {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px 4px;
+            transition: color .15s;
+        }
+        .wt-delete-entry:hover { color: var(--red); }
+        .wt-empty {
+            padding: 28px 18px;
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            #weight-page { padding: 18px 16px; }
+            .wt-chart-wrap { height: 200px; }
+        }
     </style>
 </head>
 <body>
@@ -678,24 +914,23 @@
     </div>
     <div class="offcanvas-body" id="offcanvas-body">
         <!-- Workout Library -->
-                <div class="sidebar-section">
-            <div class="month-header" id="library-toggle">
-                <span><i class="bi bi-journal-bookmark me-2"></i>Additional Links</span>
-                <i class="bi bi-chevron-right chevron" id="library-chevron"></i>
+        <div class="sidebar-section">
+            <div class="month-header" id="oc-library-toggle">
+                <span><i class="bi bi-journal-bookmark me-2"></i>Workout Library</span>
+                <i class="bi bi-chevron-right chevron" id="oc-library-chevron"></i>
             </div>
-            <div class="week-list" id="library-menu">
-                <div class="week-item" id="open-catalog">
+            <div class="week-list" id="oc-library-menu">
+                <div class="week-item" id="oc-open-catalog">
                     <i class="bi bi-grid" style="font-size:12px;"></i>
                     <span>Exercise Catalog</span>
                     <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
                 </div>
-                <div class="week-item">
-                    <i class="bi bi-grid" style="font-size:12px;"></i>
-                    <a href="https://luismed674.github.io/personalWebsite/">About Me!</a>
-
+                <div class="week-item" id="oc-open-weight">
+                    <i class="bi bi-graph-up-arrow" style="font-size:12px;"></i>
+                    <span>Weight Tracker</span>
+                    <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
                 </div>
             </div>
-
         </div>
         <div class="month-nav" id="offcanvas-month-nav"></div>
     </div>
@@ -712,7 +947,7 @@
         <!-- WORKOUT LIBRARY DROPDOWN -->
         <div class="sidebar-section">
             <div class="month-header" id="library-toggle">
-                <span><i class="bi bi-journal-bookmark me-2"></i>Additional Links</span>
+                <span><i class="bi bi-journal-bookmark me-2"></i>Workout Library</span>
                 <i class="bi bi-chevron-right chevron" id="library-chevron"></i>
             </div>
             <div class="week-list" id="library-menu">
@@ -721,13 +956,12 @@
                     <span>Exercise Catalog</span>
                     <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
                 </div>
-                <div class="week-item">
-                    <i class="bi bi-grid" style="font-size:12px;"></i>
-                    <a href="https://luismed674.github.io/personalWebsite/">About Me!</a>
-
+                <div class="week-item" id="open-weight">
+                    <i class="bi bi-graph-up-arrow" style="font-size:12px;"></i>
+                    <span>Weight Tracker</span>
+                    <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
                 </div>
             </div>
-
         </div>
 
         <div class="month-nav" id="month-nav"></div>
@@ -989,6 +1223,103 @@
         </div>
 
     </section>
+<!-- WEIGHT TRACKER PAGE -->
+<section id="weight-page">
+    <div class="wt-header">
+        <button class="back-btn" id="weight-back">
+            <i class="bi bi-arrow-left"></i> Back to Log
+        </button>
+        <div class="wt-title-block">
+            <h2><i class="bi bi-graph-up-arrow me-2" style="color:var(--gold);"></i>Weight Tracker</h2>
+            <p>Log your weight and track your progress over time</p>
+        </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="wt-stats">
+        <div class="wt-stat">
+            <div class="wt-stat-label">Current</div>
+            <div class="wt-stat-value" id="wt-stat-current">—</div>
+        </div>
+        <div class="wt-stat">
+            <div class="wt-stat-label">Starting</div>
+            <div class="wt-stat-value" id="wt-stat-start">—</div>
+        </div>
+        <div class="wt-stat">
+            <div class="wt-stat-label">Change</div>
+            <div class="wt-stat-value" id="wt-stat-change">—</div>
+        </div>
+        <div class="wt-stat">
+            <div class="wt-stat-label">Lowest</div>
+            <div class="wt-stat-value" id="wt-stat-low">—</div>
+        </div>
+        <div class="wt-stat">
+            <div class="wt-stat-label">Highest</div>
+            <div class="wt-stat-value" id="wt-stat-high">—</div>
+        </div>
+        <div class="wt-stat">
+            <div class="wt-stat-label">Entries</div>
+            <div class="wt-stat-value" id="wt-stat-count">0</div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="wt-chart-card">
+        <div class="wt-chart-toolbar">
+            <span class="wt-chart-title">Progress</span>
+            <div class="wt-toolbar-right">
+                <div class="wt-toggle-group" id="wt-range-group">
+                    <button class="wt-toggle-btn active" data-range="30">30d</button>
+                    <button class="wt-toggle-btn" data-range="90">90d</button>
+                    <button class="wt-toggle-btn" data-range="180">6m</button>
+                    <button class="wt-toggle-btn" data-range="0">All</button>
+                </div>
+                <div class="wt-toggle-group" id="wt-unit-group">
+                    <button class="wt-toggle-btn active" data-unit="lbs">lbs</button>
+                    <button class="wt-toggle-btn" data-unit="kg">kg</button>
+                </div>
+            </div>
+        </div>
+        <div class="wt-chart-wrap">
+            <canvas id="wt-chart"></canvas>
+        </div>
+    </div>
+
+    <!-- Log form -->
+    <div class="wt-log-card">
+        <div class="wt-log-title"><i class="bi bi-plus-circle me-2" style="color:var(--gold);"></i>Log Weight</div>
+        <div class="wt-log-row">
+            <div class="wt-field">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" id="wt-date"/>
+            </div>
+            <div class="wt-field">
+                <label class="form-label">Weight</label>
+                <input type="number" class="form-control" id="wt-weight" placeholder="e.g. 185" min="50" max="700" step="0.1"/>
+            </div>
+            <div class="wt-field" style="max-width:120px;">
+                <label class="form-label">Unit</label>
+                <select class="form-select" id="wt-unit-input">
+                    <option value="lbs">lbs</option>
+                    <option value="kg">kg</option>
+                </select>
+            </div>
+            <button class="wt-log-btn" id="wt-save-btn">
+                <i class="bi bi-check2 me-1"></i> Save
+            </button>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="wt-history-card">
+        <div class="wt-history-header">
+            <span class="wt-history-title">History</span>
+            <span style="font-size:12px;color:var(--text-dim);" id="wt-history-showing"></span>
+        </div>
+        <div id="wt-history-body"></div>
+    </div>
+</section>
+
 </div>
 
 <!-- LOG WORKOUT MODAL -->
@@ -1129,6 +1460,8 @@ function showView(view) {
     state.view = view;
     document.getElementById('main').style.display = view === 'tracker' ? 'block' : 'none';
     document.getElementById('catalog-page').style.display = view === 'catalog' ? 'block' : 'none';
+    document.getElementById('weight-page').style.display = view === 'weight' ? 'block' : 'none';
+    if (view === 'weight') renderWeightPage();
 }
 
 // ════════════════════════════════════════════
@@ -1223,6 +1556,17 @@ document.getElementById('oc-open-catalog').addEventListener('click', () => {
 });
 
 document.getElementById('catalog-back').addEventListener('click', () => {
+    showView('tracker');
+});
+
+document.getElementById('open-weight').addEventListener('click', () => {
+    showView('weight');
+});
+document.getElementById('oc-open-weight').addEventListener('click', () => {
+    bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide();
+    showView('weight');
+});
+document.getElementById('weight-back').addEventListener('click', () => {
     showView('tracker');
 });
 
@@ -1487,6 +1831,249 @@ function formatDate(ymdStr) {
 // ════════════════════════════════════════════
 renderSidebar();
 renderMain();
+
+// ════════════════════════════════════════════
+//   WEIGHT TRACKER
+// ════════════════════════════════════════════
+const WT_KEY = 'ironlog_weight_v1';
+// Entry: { id, date: 'YYYY-MM-DD', valueLbs: number }
+
+function wtLoad() {
+    try { return JSON.parse(localStorage.getItem(WT_KEY)) || []; }
+    catch { return []; }
+}
+function wtSave(entries) {
+    localStorage.setItem(WT_KEY, JSON.stringify(entries));
+}
+
+let wtUnit = 'lbs';   // display unit
+let wtRange = 30;     // 0 = all
+let wtChart = null;
+
+function lbsToKg(v) { return Math.round(v * 0.453592 * 10) / 10; }
+function kgToLbs(v) { return Math.round(v * 2.20462 * 10) / 10; }
+function displayVal(lbs) { return wtUnit === 'lbs' ? lbs : lbsToKg(lbs); }
+function fmt(lbs) { return displayVal(lbs).toFixed(1); }
+
+function wtFilteredEntries(entries) {
+    if (wtRange === 0) return entries;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - wtRange);
+    const cutoffStr = cutoff.toISOString().slice(0,10);
+    return entries.filter(e => e.date >= cutoffStr);
+}
+
+function renderWeightPage() {
+    const allEntries = wtLoad().sort((a,b) => a.date.localeCompare(b.date));
+    const entries = wtFilteredEntries(allEntries);
+
+    // Set today's date as default in the input
+    const dateInput = document.getElementById('wt-date');
+    if (!dateInput.value) dateInput.value = today();
+
+    // ── Stats ──
+    const statCurrent = document.getElementById('wt-stat-current');
+    const statStart   = document.getElementById('wt-stat-start');
+    const statChange  = document.getElementById('wt-stat-change');
+    const statLow     = document.getElementById('wt-stat-low');
+    const statHigh    = document.getElementById('wt-stat-high');
+    const statCount   = document.getElementById('wt-stat-count');
+
+    if (allEntries.length === 0) {
+        [statCurrent, statStart, statChange, statLow, statHigh].forEach(el => {
+            el.textContent = '—'; el.className = 'wt-stat-value';
+        });
+        statCount.textContent = '0';
+    } else {
+        const first = allEntries[0], last = allEntries[allEntries.length - 1];
+        const vals = allEntries.map(e => e.valueLbs);
+        const diff = last.valueLbs - first.valueLbs;
+        const diffDisplay = (diff >= 0 ? '+' : '') + displayVal(Math.abs(diff)).toFixed(1);
+
+        statCurrent.innerHTML = `${fmt(last.valueLbs)}<span class="wt-stat-unit">${wtUnit}</span>`;
+        statStart.innerHTML   = `${fmt(first.valueLbs)}<span class="wt-stat-unit">${wtUnit}</span>`;
+        statChange.innerHTML  = `${diff >= 0 ? '+' : '−'}${displayVal(Math.abs(diff)).toFixed(1)}<span class="wt-stat-unit">${wtUnit}</span>`;
+        statChange.className  = 'wt-stat-value ' + (diff > 0 ? 'positive' : diff < 0 ? 'negative' : '');
+        statLow.innerHTML     = `${fmt(Math.min(...vals))}<span class="wt-stat-unit">${wtUnit}</span>`;
+        statHigh.innerHTML    = `${fmt(Math.max(...vals))}<span class="wt-stat-unit">${wtUnit}</span>`;
+        statCount.textContent = allEntries.length;
+    }
+
+    // ── Chart ──
+    const labels  = entries.map(e => { const d = parseYmd(e.date); return `${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}`; });
+    const values  = entries.map(e => displayVal(e.valueLbs));
+    const canvasEl = document.getElementById('wt-chart');
+
+    if (wtChart) { wtChart.destroy(); wtChart = null; }
+
+    if (entries.length === 0) {
+        const ctx = canvasEl.getContext('2d');
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    } else {
+        wtChart = new Chart(canvasEl, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    borderColor: '#F0B429',
+                    backgroundColor: 'rgba(240,180,41,0.08)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#F0B429',
+                    pointRadius: entries.length > 60 ? 2 : 4,
+                    pointHoverRadius: 6,
+                    tension: 0.35,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1A1D23',
+                        borderColor: '#2C313A',
+                        borderWidth: 1,
+                        titleColor: '#8892A4',
+                        bodyColor: '#F0B429',
+                        bodyFont: { family: 'Barlow Condensed', size: 16, weight: '700' },
+                        callbacks: {
+                            label: ctx => ` ${ctx.parsed.y.toFixed(1)} ${wtUnit}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(44,49,58,0.5)' },
+                        ticks: { color: '#8892A4', font: { size: 11 }, maxTicksLimit: 8 }
+                    },
+                    y: {
+                        grid: { color: 'rgba(44,49,58,0.5)' },
+                        ticks: {
+                            color: '#8892A4',
+                            font: { size: 11 },
+                            callback: v => v.toFixed(1) + ' ' + wtUnit
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ── History table ──
+    const body = document.getElementById('wt-history-body');
+    const showing = document.getElementById('wt-history-showing');
+    const reversed = [...allEntries].reverse();
+
+    showing.textContent = allEntries.length
+        ? `${allEntries.length} entr${allEntries.length === 1 ? 'y' : 'ies'}`
+        : '';
+
+    if (allEntries.length === 0) {
+        body.innerHTML = `<div class="wt-empty"><i class="bi bi-journal-x me-2"></i>No entries yet — log your first weight above.</div>`;
+        return;
+    }
+
+    let rows = '';
+    reversed.forEach((e, i) => {
+        const prev = reversed[i + 1];
+        let deltaHtml = '';
+        if (prev) {
+            const diff = e.valueLbs - prev.valueLbs;
+            if (Math.abs(diff) > 0.01) {
+                const sign = diff > 0 ? '+' : '−';
+                const cls  = diff > 0 ? 'up' : 'down';
+                const icon = diff > 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+                deltaHtml = `<span class="wt-delta ${cls}"><i class="bi ${icon}"></i> ${sign}${displayVal(Math.abs(diff)).toFixed(1)} ${wtUnit}</span>`;
+            } else {
+                deltaHtml = `<span class="wt-delta" style="color:var(--muted)">—</span>`;
+            }
+        }
+        const d = parseYmd(e.date);
+        const dateStr = `${DAYS[d.getDay()]}, ${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+        rows += `<tr>
+            <td>${dateStr}</td>
+            <td>${fmt(e.valueLbs)} <span style="font-size:11px;color:var(--text-dim);font-family:Inter,sans-serif;font-weight:400;">${wtUnit}</span></td>
+            <td>${deltaHtml}</td>
+            <td style="text-align:right;">
+                <button class="wt-delete-entry" data-id="${e.id}" title="Delete entry"><i class="bi bi-trash3"></i></button>
+            </td>
+        </tr>`;
+    });
+
+    body.innerHTML = `<table class="wt-history-table">
+        <thead><tr><th>Date</th><th>Weight</th><th>Change</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+    </table>`;
+
+    body.querySelectorAll('.wt-delete-entry').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const entries = wtLoad().filter(e => e.id !== btn.dataset.id);
+            wtSave(entries);
+            renderWeightPage();
+        });
+    });
+}
+
+// Range toggle
+document.getElementById('wt-range-group').addEventListener('click', e => {
+    const btn = e.target.closest('.wt-toggle-btn');
+    if (!btn) return;
+    document.querySelectorAll('#wt-range-group .wt-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    wtRange = parseInt(btn.dataset.range);
+    renderWeightPage();
+});
+
+// Unit toggle
+document.getElementById('wt-unit-group').addEventListener('click', e => {
+    const btn = e.target.closest('.wt-toggle-btn');
+    if (!btn) return;
+    document.querySelectorAll('#wt-unit-group .wt-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    wtUnit = btn.dataset.unit;
+    document.getElementById('wt-unit-input').value = wtUnit;
+    renderWeightPage();
+});
+
+// Sync log form unit to display unit
+document.getElementById('wt-unit-input').addEventListener('change', e => {
+    const newUnit = e.target.value;
+    document.querySelectorAll('#wt-unit-group .wt-toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.unit === newUnit);
+    });
+    wtUnit = newUnit;
+    renderWeightPage();
+});
+
+// Save entry
+document.getElementById('wt-save-btn').addEventListener('click', () => {
+    const date   = document.getElementById('wt-date').value;
+    const rawVal = parseFloat(document.getElementById('wt-weight').value);
+    const unit   = document.getElementById('wt-unit-input').value;
+
+    if (!date || isNaN(rawVal) || rawVal <= 0) {
+        document.getElementById('wt-weight').classList.add('is-invalid');
+        return;
+    }
+    document.getElementById('wt-weight').classList.remove('is-invalid');
+
+    const valueLbs = unit === 'lbs' ? rawVal : kgToLbs(rawVal);
+    const entries  = wtLoad();
+
+    // If an entry exists for this date, replace it
+    const existingIdx = entries.findIndex(e => e.date === date);
+    const newEntry = { id: Date.now().toString(), date, valueLbs: Math.round(valueLbs * 10) / 10 };
+    if (existingIdx !== -1) entries[existingIdx] = newEntry;
+    else entries.push(newEntry);
+
+    wtSave(entries);
+    document.getElementById('wt-weight').value = '';
+    renderWeightPage();
+});
+
 </script>
 </body>
 </html>
