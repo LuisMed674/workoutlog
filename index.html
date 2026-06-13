@@ -9,14 +9,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-
     <style>
         :root {
             --base:       #0D0F12;
             --surface:    #13161B;
             --card:       #1A1D23;
             --border:     #2C313A;
-            --muted: #b510da;
+            --muted: #da9a10;
             --text:       #E8EAF0;
             --text-dim:   #8892A4;
             --gold:       #F0B429;
@@ -26,870 +25,177 @@
             --red:        #F87171;
             --radius:     10px;
         }
-
         * { box-sizing: border-box; }
-
-        body {
-            background: var(--base);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        /* ── LAYOUT ─────────────────────────────── */
+        body { background: var(--base); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; margin: 0; }
         #app { display: flex; min-height: 100vh; }
-
-        /* ── SIDEBAR ─────────────────────────────── */
-        #sidebar {
-            width: 260px;
-            min-width: 260px;
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .sidebar-brand {
-            padding: 24px 20px 16px;
-            border-bottom: 1px solid var(--border);
-        }
-        .sidebar-brand h1 {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 26px;
-            letter-spacing: 1px;
-            color: var(--gold);
-            margin: 0;
-            line-height: 1;
-        }
+        #sidebar { width: 260px; min-width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        .sidebar-brand { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); }
+        .sidebar-brand h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 1px; color: var(--gold); margin: 0; line-height: 1; }
         .sidebar-brand span { color: var(--text-dim); font-size: 12px; font-weight: 400; }
-
-        .sidebar-section {
-            border-bottom: 1px solid var(--border);
-        }
-
+        .sidebar-section { border-bottom: 1px solid var(--border); }
         .month-nav { padding: 12px 0; flex: 1; }
-
-        .month-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 20px;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 15px;
-            letter-spacing: .8px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            cursor: pointer;
-            user-select: none;
-            transition: color .15s;
-        }
+        .month-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: .8px; text-transform: uppercase; color: var(--text-dim); cursor: pointer; user-select: none; transition: color .15s; }
         .month-header:hover { color: var(--text); }
         .month-header.active { color: var(--gold); }
         .month-header .chevron { transition: transform .2s; font-size: 12px; }
         .month-header.open .chevron { transform: rotate(90deg); }
-
         .week-list { display: none; padding-bottom: 4px; }
         .week-list.open { display: block; }
-
-        .week-item {
-            padding: 6px 20px 6px 32px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            color: var(--text-dim);
-            font-size: 13px;
-            border-left: 2px solid transparent;
-            transition: color .15s, border-color .15s;
-        }
+        .week-item { padding: 6px 20px 6px 32px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-dim); font-size: 13px; border-left: 2px solid transparent; transition: color .15s, border-color .15s; }
         .week-item:hover { color: var(--text); border-left-color: var(--border); }
         .week-item.active { color: var(--gold); border-left-color: var(--gold); background: rgba(240,180,41,.05); }
-
-        .week-badge {
-            margin-left: auto;
-            background: var(--border);
-            color: var(--text-dim);
-            border-radius: 99px;
-            font-size: 10px;
-            padding: 1px 7px;
-        }
+        .week-badge { margin-left: auto; background: var(--border); color: var(--text-dim); border-radius: 99px; font-size: 10px; padding: 1px 7px; }
         .week-item.active .week-badge { background: rgba(240,180,41,.2); color: var(--gold); }
-
-        /* ── MAIN ─────────────────────────────── */
-        #main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 32px 36px;
-            max-width: 860px;
-        }
-
-        .view-header {
-            margin-bottom: 28px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
-        }
-        .view-header h2 {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 32px;
-            letter-spacing: .5px;
-            margin: 0 0 4px;
-        }
+        #main { flex: 1; overflow-y: auto; padding: 32px 36px; max-width: 860px; }
+        .view-header { margin-bottom: 28px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        .view-header h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: .5px; margin: 0 0 4px; }
         .view-header p { color: var(--text-dim); margin: 0; font-size: 13px; }
-
-        /* ── DAY CARDS ─────────────────────────────── */
-        .day-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 12px;
-            overflow: hidden;
-            transition: border-color .2s;
-        }
+        .day-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; transition: border-color .2s; }
         .day-card:hover { border-color: var(--muted); }
         .day-card.today { border-color: var(--gold); }
-
-        .day-card-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px 18px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .day-num {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 28px;
-            color: var(--text-dim);
-            line-height: 1;
-            min-width: 32px;
-        }
+        .day-card-header { display: flex; align-items: center; gap: 14px; padding: 14px 18px; cursor: pointer; user-select: none; }
+        .day-num { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px; color: var(--text-dim); line-height: 1; min-width: 32px; }
         .today .day-num { color: var(--gold); }
-
         .day-label { flex: 1; }
-        .day-label .name {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 600;
-            font-size: 17px;
-            letter-spacing: .3px;
-        }
+        .day-label .name { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: .3px; }
         .today .day-label .name { color: var(--gold); }
         .day-label .sub { font-size: 12px; color: var(--text-dim); }
-
         .day-pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
-        .muscle-pill {
-            font-size: 10px;
-            padding: 2px 9px;
-            border-radius: 99px;
-            background: rgba(240,180,41,.12);
-            color: var(--gold);
-            font-weight: 600;
-            letter-spacing: .4px;
-            text-transform: uppercase;
-        }
-
-        .day-toggle-btn {
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-size: 18px;
-            padding: 0;
-            cursor: pointer;
-            transition: color .15s, transform .2s;
-        }
+        .muscle-pill { font-size: 10px; padding: 2px 9px; border-radius: 99px; background: rgba(240,180,41,.12); color: var(--gold); font-weight: 600; letter-spacing: .4px; text-transform: uppercase; }
+        .day-toggle-btn { background: none; border: none; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; transition: color .15s, transform .2s; }
         .day-toggle-btn.open { color: var(--gold); transform: rotate(45deg); }
-
-        /* ── DAY BODY ─────────────────────────────── */
         .day-body { display: none; padding: 0 18px 18px; }
         .day-body.open { display: block; }
-
-        /* ── WORKOUT ENTRY ─────────────────────────── */
-        .workout-entry {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-        }
-        .workout-entry-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .workout-entry-header .w-name {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 18px;
-            flex: 1;
-            line-height: 1.1;
-        }
-        .workout-entry-header .w-muscle {
-            font-size: 11px;
-            padding: 3px 10px;
-            border-radius: 99px;
-            background: rgba(74,222,128,.12);
-            color: var(--green);
-            font-weight: 600;
-            letter-spacing: .4px;
-            text-transform: uppercase;
-        }
+        .workout-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+        .workout-entry-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+        .workout-entry-header .w-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; flex: 1; line-height: 1.1; }
+        .workout-entry-header .w-muscle { font-size: 11px; padding: 3px 10px; border-radius: 99px; background: rgba(74,222,128,.12); color: var(--green); font-weight: 600; letter-spacing: .4px; text-transform: uppercase; }
         .workout-action-btns { display: flex; gap: 4px; }
-        .edit-workout-btn {
-            background: none;
-            border: none;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 14px;
-            padding: 2px 4px;
-            transition: color .15s;
-        }
+        .edit-workout-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px 4px; transition: color .15s; }
         .edit-workout-btn:hover { color: var(--gold); }
-        .delete-workout-btn {
-            background: none;
-            border: none;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 14px;
-            padding: 2px 4px;
-            transition: color .15s;
-        }
+        .delete-workout-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px 4px; transition: color .15s; }
         .delete-workout-btn:hover { color: var(--red); }
-
-        /* Sets table */
         .sets-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-        .sets-table th {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: .8px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            padding: 4px 8px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        .sets-table td {
-            padding: 5px 8px;
-            font-size: 13px;
-            color: var(--text);
-            border-bottom: 1px solid rgba(44,49,58,.5);
-            vertical-align: middle;
-        }
+        .sets-table th { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-dim); padding: 4px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+        .sets-table td { padding: 5px 8px; font-size: 13px; color: var(--text); border-bottom: 1px solid rgba(44,49,58,.5); vertical-align: middle; }
         .sets-table tr:last-child td { border-bottom: none; }
-        .set-num {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--gold);
-            width: 32px;
-        }
+        .set-num { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; color: var(--gold); width: 32px; }
         .set-reps { font-weight: 500; }
         .set-weight { color: var(--text-dim); }
         .set-weight.has-weight { color: var(--green); font-weight: 500; }
-
-        /* Log CTA button */
-        .log-btn {
-            background: rgba(240,180,41,.1);
-            border: 1px dashed var(--gold-dim);
-            color: var(--gold);
-            border-radius: 8px;
-            width: 100%;
-            padding: 10px;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 15px;
-            letter-spacing: .5px;
-            cursor: pointer;
-            transition: background .15s, border-color .15s;
-            margin-top: 8px;
-        }
+        .log-btn { background: rgba(240,180,41,.1); border: 1px dashed var(--gold-dim); color: var(--gold); border-radius: 8px; width: 100%; padding: 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: .5px; cursor: pointer; transition: background .15s, border-color .15s; margin-top: 8px; }
         .log-btn:hover { background: rgba(240,180,41,.18); border-color: var(--gold); }
-
-        /* ── MODAL ─────────────────────────────── */
-        .modal-content {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-        }
-        .modal-header {
-            border-bottom: 1px solid var(--border);
-            padding: 18px 22px 14px;
-        }
-        .modal-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 22px;
-            color: var(--gold);
-        }
+        .modal-content { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+        .modal-header { border-bottom: 1px solid var(--border); padding: 18px 22px 14px; }
+        .modal-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; color: var(--gold); }
         .modal-body { padding: 20px 22px; }
         .modal-footer { border-top: 1px solid var(--border); padding: 14px 22px; }
-
-        .form-label {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: .8px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            margin-bottom: 5px;
-        }
-        .form-control, .form-select {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text);
-            border-radius: 7px;
-            font-size: 14px;
-            transition: border-color .15s, box-shadow .15s;
-        }
-        .form-control:focus, .form-select:focus {
-            background: var(--surface);
-            border-color: var(--gold);
-            color: var(--text);
-            box-shadow: 0 0 0 3px rgba(240,180,41,.15);
-        }
+        .form-label { font-size: 11px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
+        .form-control, .form-select { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 7px; font-size: 14px; transition: border-color .15s, box-shadow .15s; }
+        .form-control:focus, .form-select:focus { background: var(--surface); border-color: var(--gold); color: var(--text); box-shadow: 0 0 0 3px rgba(240,180,41,.15); }
         .form-control::placeholder { color: var(--muted); }
         .form-select option { background: var(--card); }
-
-        /* Sets builder */
         #sets-builder { margin-top: 6px; }
-        .set-row {
-            display: grid;
-            grid-template-columns: 30px 1fr 1fr auto;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .set-row-num {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 17px;
-            color: var(--gold);
-            text-align: center;
-        }
-        .remove-set-btn {
-            background: none;
-            border: none;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0 4px;
-            transition: color .15s;
-        }
+        .set-row { display: grid; grid-template-columns: 30px 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .set-row-num { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; color: var(--gold); text-align: center; }
+        .remove-set-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; transition: color .15s; }
         .remove-set-btn:hover { color: var(--red); }
-
-        .add-set-btn {
-            background: none;
-            border: 1px dashed var(--border);
-            color: var(--text-dim);
-            border-radius: 7px;
-            width: 100%;
-            padding: 7px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: border-color .15s, color .15s;
-            margin-top: 2px;
-        }
+        .add-set-btn { background: none; border: 1px dashed var(--border); color: var(--text-dim); border-radius: 7px; width: 100%; padding: 7px; font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color .15s, color .15s; margin-top: 2px; }
         .add-set-btn:hover { border-color: var(--gold); color: var(--gold); }
-
-        .btn-gold {
-            background: var(--gold);
-            color: #0D0F12;
-            border: none;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 16px;
-            letter-spacing: .5px;
-            padding: 9px 24px;
-            border-radius: 7px;
-            cursor: pointer;
-            transition: background .15s;
-        }
+        .btn-gold { background: var(--gold); color: #0D0F12; border: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: .5px; padding: 9px 24px; border-radius: 7px; cursor: pointer; transition: background .15s; }
         .btn-gold:hover { background: #f5c44a; }
-
-        .btn-ghost {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            font-size: 14px;
-            padding: 9px 18px;
-            border-radius: 7px;
-            cursor: pointer;
-            transition: border-color .15s, color .15s;
-        }
+        .btn-ghost { background: none; border: 1px solid var(--border); color: var(--text-dim); font-size: 14px; padding: 9px 18px; border-radius: 7px; cursor: pointer; transition: border-color .15s, color .15s; }
         .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
-
-        /* today indicator */
-        .today-dot {
-            display: inline-block;
-            width: 7px; height: 7px;
-            background: var(--gold);
-            border-radius: 50%;
-            margin-right: 6px;
-            vertical-align: middle;
-        }
-
-        /* empty state */
-        .empty-day {
-            color: var(--muted);
-            font-size: 13px;
-            padding: 8px 2px;
-        }
-
-        /* scrollbar */
+        .today-dot { display: inline-block; width: 7px; height: 7px; background: var(--gold); border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .empty-day { color: var(--muted); font-size: 13px; padding: 8px 2px; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-        /* ── CATALOG PAGE ─────────────────────────────── */
         #catalog-page { display: none; flex: 1; overflow-y: auto; padding: 32px 36px; max-width: 900px; }
-
-        .catalog-header {
-            margin-bottom: 28px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-        }
-        .catalog-header .back-btn {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            border-radius: 7px;
-            padding: 6px 14px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: border-color .15s, color .15s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 4px;
-            white-space: nowrap;
-        }
+        .catalog-header { margin-bottom: 28px; border-bottom: 1px solid var(--border); padding-bottom: 20px; display: flex; align-items: flex-start; gap: 16px; }
+        .catalog-header .back-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); border-radius: 7px; padding: 6px 14px; font-size: 13px; cursor: pointer; transition: border-color .15s, color .15s; display: flex; align-items: center; gap: 6px; margin-top: 4px; white-space: nowrap; }
         .catalog-header .back-btn:hover { border-color: var(--muted); color: var(--text); }
-
         .catalog-title-block { flex: 1; }
-        .catalog-title-block h2 {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 32px;
-            letter-spacing: .5px;
-            margin: 0 0 4px;
-        }
+        .catalog-title-block h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: .5px; margin: 0 0 4px; }
         .catalog-title-block p { color: var(--text-dim); margin: 0; font-size: 13px; }
-
-        /* Muscle group filter tabs */
-        .catalog-filters {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 28px;
-        }
-        .filter-tab {
-            background: var(--card);
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            border-radius: 99px;
-            padding: 5px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: .4px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all .15s;
-        }
+        .catalog-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+        .filter-tab { background: var(--card); border: 1px solid var(--border); color: var(--text-dim); border-radius: 99px; padding: 5px 14px; font-size: 12px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; cursor: pointer; transition: all .15s; }
         .filter-tab:hover { border-color: var(--muted); color: var(--text); }
-        .filter-tab.active {
-            background: rgba(240,180,41,.15);
-            border-color: var(--gold);
-            color: var(--gold);
-        }
-
-        /* Catalog muscle section */
+        .filter-tab.active { background: rgba(240,180,41,.15); border-color: var(--gold); color: var(--gold); }
         .catalog-section { margin-bottom: 36px; }
-        .catalog-section-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 14px;
-        }
-        .catalog-section-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 22px;
-            letter-spacing: .4px;
-            color: var(--text);
-        }
-        .catalog-section-count {
-            font-size: 11px;
-            padding: 2px 9px;
-            border-radius: 99px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            font-weight: 600;
-        }
-        .catalog-section-line {
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        /* Exercise cards grid */
-        .exercise-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-        }
-        .exercise-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px 16px;
-            cursor: pointer;
-            transition: border-color .2s, background .15s;
-            position: relative;
-        }
-        .exercise-card:hover {
-            border-color: var(--gold-dim);
-            background: rgba(240,180,41,.04);
-        }
-        .exercise-card-name {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 16px;
-            line-height: 1.2;
-            margin-bottom: 6px;
-            color: var(--text);
-        }
-        .exercise-card-meta {
-            font-size: 11px;
-            color: var(--text-dim);
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .exercise-card-tag {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 1px 7px;
-            font-size: 10px;
-            color: var(--text-dim);
-        }
-        .exercise-card-tag.compound {
-            background: rgba(240,180,41,.1);
-            border-color: rgba(240,180,41,.3);
-            color: var(--gold);
-        }
-        .exercise-card-tag.isolation {
-            background: rgba(74,222,128,.08);
-            border-color: rgba(74,222,128,.25);
-            color: var(--green);
-        }
-
-        /* ── MOBILE OFFCANVAS SIDEBAR ─────────────────────────────── */
-        .mobile-topbar {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .mobile-topbar .brand-name {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 22px;
-            color: var(--gold);
-            letter-spacing: 1px;
-        }
-        .hamburger-btn {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            border-radius: 7px;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            cursor: pointer;
-            transition: border-color .15s, color .15s;
-        }
+        .catalog-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .catalog-section-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: .4px; color: var(--text); }
+        .catalog-section-count { font-size: 11px; padding: 2px 9px; border-radius: 99px; background: var(--card); border: 1px solid var(--border); color: var(--text-dim); font-weight: 600; }
+        .catalog-section-line { flex: 1; height: 1px; background: var(--border); }
+        .exercise-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        .exercise-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; cursor: pointer; transition: border-color .2s, background .15s; position: relative; }
+        .exercise-card:hover { border-color: var(--gold-dim); background: rgba(240,180,41,.04); }
+        .exercise-card-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; line-height: 1.2; margin-bottom: 6px; color: var(--text); }
+        .exercise-card-meta { font-size: 11px; color: var(--text-dim); display: flex; gap: 8px; flex-wrap: wrap; }
+        .exercise-card-tag { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 7px; font-size: 10px; color: var(--text-dim); }
+        .exercise-card-tag.compound { background: rgba(240,180,41,.1); border-color: rgba(240,180,41,.3); color: var(--gold); }
+        .exercise-card-tag.isolation { background: rgba(74,222,128,.08); border-color: rgba(74,222,128,.25); color: var(--green); }
+        .mobile-topbar { display: none; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .mobile-topbar .brand-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; color: var(--gold); letter-spacing: 1px; }
+        .hamburger-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); border-radius: 7px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: border-color .15s, color .15s; }
         .hamburger-btn:hover { border-color: var(--muted); color: var(--text); }
-
-        /* Offcanvas overrides */
-        .offcanvas {
-            background: var(--surface) !important;
-            border-right: 1px solid var(--border) !important;
-            width: 280px !important;
-        }
-        .offcanvas-header {
-            border-bottom: 1px solid var(--border);
-            padding: 18px 20px 14px;
-        }
-        .offcanvas-header .offcanvas-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 24px;
-            color: var(--gold);
-            letter-spacing: 1px;
-        }
+        /* ── OFFCANVAS FIXES ── */
+        .offcanvas { background: var(--surface) !important; border-right: 1px solid var(--border) !important; width: 280px !important; display: flex !important; flex-direction: column !important; }
+        .offcanvas-header { border-bottom: 1px solid var(--border); padding: 18px 20px 14px; flex-shrink: 0; }
+        .offcanvas-header .offcanvas-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px; color: var(--gold); letter-spacing: 1px; }
         .offcanvas-header .btn-close { filter: invert(1) brightness(0.6); }
-        .offcanvas-body { padding: 0; overflow-y: auto; }
-
+        /* KEY FIX: offcanvas-body scrolls, month nav is inside it */
+        .offcanvas-body { padding: 0; overflow-y: auto; flex: 1; min-height: 0; }
         @media (max-width: 640px) {
             #sidebar { display: none; }
             .mobile-topbar { display: flex; }
             #app { flex-direction: column; }
             #main, #catalog-page { padding: 18px 16px; }
         }
-
-        /* ── WEIGHT TRACKER PAGE ─────────────────────────────── */
         #weight-page { display: none; flex: 1; overflow-y: auto; padding: 32px 36px; max-width: 860px; }
-
-        .wt-header {
-            margin-bottom: 28px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-        }
-        .wt-header .back-btn {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            border-radius: 7px;
-            padding: 6px 14px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: border-color .15s, color .15s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 4px;
-            white-space: nowrap;
-        }
+        .wt-header { margin-bottom: 28px; border-bottom: 1px solid var(--border); padding-bottom: 20px; display: flex; align-items: flex-start; gap: 16px; }
+        .wt-header .back-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); border-radius: 7px; padding: 6px 14px; font-size: 13px; cursor: pointer; transition: border-color .15s, color .15s; display: flex; align-items: center; gap: 6px; margin-top: 4px; white-space: nowrap; }
         .wt-header .back-btn:hover { border-color: var(--muted); color: var(--text); }
         .wt-title-block { flex: 1; }
-        .wt-title-block h2 {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 32px;
-            letter-spacing: .5px;
-            margin: 0 0 4px;
-        }
+        .wt-title-block h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: .5px; margin: 0 0 4px; }
         .wt-title-block p { color: var(--text-dim); margin: 0; font-size: 13px; }
-
-        /* stat cards */
-        .wt-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-bottom: 24px;
-        }
-        .wt-stat {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 14px 16px;
-        }
-        .wt-stat-label {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: .8px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            margin-bottom: 6px;
-        }
-        .wt-stat-value {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 26px;
-            color: var(--text);
-            line-height: 1;
-        }
+        .wt-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 24px; }
+        .wt-stat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+        .wt-stat-label { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+        .wt-stat-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; color: var(--text); line-height: 1; }
         .wt-stat-value.positive { color: var(--green); }
         .wt-stat-value.negative { color: var(--red); }
-        .wt-stat-unit {
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-left: 3px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 400;
-        }
-
-        /* chart card */
-        .wt-chart-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .wt-chart-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .wt-chart-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 17px;
-            color: var(--text);
-        }
+        .wt-stat-unit { font-size: 12px; color: var(--text-dim); margin-left: 3px; font-family: 'Inter', sans-serif; font-weight: 400; }
+        .wt-chart-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+        .wt-chart-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+        .wt-chart-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; color: var(--text); }
         .wt-toolbar-right { display: flex; gap: 8px; flex-wrap: wrap; }
-
-        /* range + unit toggles */
-        .wt-toggle-group {
-            display: flex;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 7px;
-            overflow: hidden;
-        }
-        .wt-toggle-btn {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: .3px;
-            padding: 5px 12px;
-            cursor: pointer;
-            transition: background .15s, color .15s;
-        }
-        .wt-toggle-btn.active {
-            background: var(--gold);
-            color: #0D0F12;
-        }
+        .wt-toggle-group { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+        .wt-toggle-btn { background: none; border: none; color: var(--text-dim); font-size: 12px; font-weight: 600; letter-spacing: .3px; padding: 5px 12px; cursor: pointer; transition: background .15s, color .15s; }
+        .wt-toggle-btn.active { background: var(--gold); color: #0D0F12; }
         .wt-toggle-btn:not(:last-child) { border-right: 1px solid var(--border); }
-
-        /* chart canvas wrapper */
         .wt-chart-wrap { position: relative; height: 260px; }
-
-        /* log form */
-        .wt-log-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .wt-log-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 17px;
-            color: var(--text);
-            margin-bottom: 14px;
-        }
-        .wt-log-row {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
+        .wt-log-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+        .wt-log-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; color: var(--text); margin-bottom: 14px; }
+        .wt-log-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
         .wt-log-row .wt-field { flex: 1; min-width: 120px; }
-        .wt-log-btn {
-            background: var(--gold);
-            color: #0D0F12;
-            border: none;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 800;
-            font-size: 15px;
-            letter-spacing: .5px;
-            padding: 9px 22px;
-            border-radius: 7px;
-            cursor: pointer;
-            transition: background .15s;
-            white-space: nowrap;
-        }
+        .wt-log-btn { background: var(--gold); color: #0D0F12; border: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: .5px; padding: 9px 22px; border-radius: 7px; cursor: pointer; transition: background .15s; white-space: nowrap; }
         .wt-log-btn:hover { background: #f5c44a; }
-
-        /* history table */
-        .wt-history-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-        }
-        .wt-history-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-        }
-        .wt-history-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 17px;
-        }
+        .wt-history-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .wt-history-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+        .wt-history-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; }
         .wt-history-table { width: 100%; border-collapse: collapse; }
-        .wt-history-table th {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: .8px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            padding: 8px 18px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            background: var(--surface);
-        }
-        .wt-history-table td {
-            padding: 9px 18px;
-            font-size: 13px;
-            border-bottom: 1px solid rgba(44,49,58,.5);
-            vertical-align: middle;
-        }
+        .wt-history-table th { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-dim); padding: 8px 18px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface); }
+        .wt-history-table td { padding: 9px 18px; font-size: 13px; border-bottom: 1px solid rgba(44,49,58,.5); vertical-align: middle; }
         .wt-history-table tr:last-child td { border-bottom: none; }
         .wt-history-table td:first-child { color: var(--text-dim); }
-        .wt-history-table td:nth-child(2) {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--gold);
-        }
+        .wt-history-table td:nth-child(2) { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; color: var(--gold); }
         .wt-delta { font-size: 12px; font-weight: 600; }
         .wt-delta.up { color: var(--red); }
         .wt-delta.down { color: var(--green); }
-        .wt-delete-entry {
-            background: none;
-            border: none;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 13px;
-            padding: 2px 4px;
-            transition: color .15s;
-        }
+        .wt-delete-entry { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 4px; transition: color .15s; }
         .wt-delete-entry:hover { color: var(--red); }
-        .wt-empty {
-            padding: 28px 18px;
-            color: var(--muted);
-            font-size: 13px;
-            text-align: center;
-        }
-
+        .wt-empty { padding: 28px 18px; color: var(--muted); font-size: 13px; text-align: center; }
         @media (max-width: 640px) {
             #weight-page { padding: 18px 16px; }
             .wt-chart-wrap { height: 200px; }
@@ -907,13 +213,13 @@
 </div>
 
 <!-- OFFCANVAS SIDEBAR (mobile) -->
+<!-- FIX: offcanvas-month-nav is now INSIDE offcanvas-body so it scrolls with the rest -->
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar-offcanvas" aria-labelledby="offcanvas-label">
     <div class="offcanvas-header">
         <span class="offcanvas-title" id="offcanvas-label"><i class="bi bi-lightning-fill" style="font-size:17px;vertical-align:middle;margin-right:4px;"></i>IRON LOG</span>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body" id="offcanvas-body">
-        <!-- Workout Library -->
         <div class="sidebar-section">
             <div class="month-header" id="oc-library-toggle">
                 <span><i class="bi bi-journal-bookmark me-2"></i>Workout Library</span>
@@ -930,29 +236,24 @@
                     <span>Weight Tracker</span>
                     <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
                 </div>
-                <div class="week-item" >
-                    <i class="bi bi-graph-up-arrow" style="font-size:12px;"></i>
-                    <a href="https://luismed674.github.io/personalWebsite/" target="none"> About Me!</a>
+                <div class="week-item">
+                    <i class="bi bi-person-circle" style="font-size:12px;"></i>
+                    <a href="https://luismed674.github.io/personalWebsite/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;">About Me!</a>
                     <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
                 </div>
-
-
             </div>
         </div>
+        <!-- Month nav is INSIDE offcanvas-body — this is the key fix -->
+        <div class="month-nav" id="offcanvas-month-nav"></div>
     </div>
-    <div class="month-nav" id="offcanvas-month-nav"></div>
-</div>
 </div>
 
 <div id="app">
-    <!-- SIDEBAR -->
     <nav id="sidebar">
         <div class="sidebar-brand">
             <h1><i class="bi bi-lightning-fill" style="font-size:20px;vertical-align:middle;margin-right:4px;"></i>IRON LOG</h1>
             <span>Your private workout tracker</span>
         </div>
-
-        <!-- WORKOUT LIBRARY DROPDOWN -->
         <div class="sidebar-section">
             <div class="month-header" id="library-toggle">
                 <span><i class="bi bi-journal-bookmark me-2"></i>Workout Library</span>
@@ -969,18 +270,16 @@
                     <span>Weight Tracker</span>
                     <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
                 </div>
-                <div class="week-item" >
-                    <i class="bi bi-graph-up-arrow" style="font-size:12px;"></i>
-                    <a href="https://luismed674.github.io/personalWebsite/" target="none"> About Me!</a>
+                <div class="week-item">
+                    <i class="bi bi-person-circle" style="font-size:12px;"></i>
+                    <a href="https://luismed674.github.io/personalWebsite/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;">About Me!</a>
                     <i class="bi bi-arrow-right" style="margin-left:auto;font-size:11px;color:var(--muted);"></i>
                 </div>
             </div>
         </div>
-
         <div class="month-nav" id="month-nav"></div>
     </nav>
 
-    <!-- TRACKER MAIN -->
     <main id="main">
         <div class="view-header" id="view-header">
             <h2 id="view-title">Loading…</h2>
@@ -989,19 +288,14 @@
         <div id="days-container"></div>
     </main>
 
-    <!-- CATALOG PAGE — static HTML, JS only for filter tabs -->
     <section id="catalog-page">
         <div class="catalog-header">
-            <button class="back-btn" id="catalog-back">
-                <i class="bi bi-arrow-left"></i> Back to Log
-            </button>
+            <button class="back-btn" id="catalog-back"><i class="bi bi-arrow-left"></i> Back to Log</button>
             <div class="catalog-title-block">
                 <h2><i class="bi bi-grid me-2" style="color:var(--gold);"></i>Exercise Catalog</h2>
                 <p>Browse exercises by target muscle group</p>
             </div>
         </div>
-
-        <!-- Filter tabs -->
         <div class="catalog-filters">
             <button class="filter-tab active" data-filter="all">All</button>
             <button class="filter-tab" data-filter="Chest">Chest</button>
@@ -1017,14 +311,8 @@
             <button class="filter-tab" data-filter="Full Body">Full Body</button>
             <button class="filter-tab" data-filter="Cardio">Cardio</button>
         </div>
-
-        <!-- ── CHEST ── -->
         <div class="catalog-section" data-muscle="Chest">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-heart-pulse me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Chest</span>
-                <span class="catalog-section-count">8 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-heart-pulse me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Chest</span><span class="catalog-section-count">8 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Barbell Bench Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Incline Bench Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
@@ -1036,14 +324,8 @@
                 <div class="exercise-card"><div class="exercise-card-name">Pec Deck</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Machine</span></div></div>
             </div>
         </div>
-
-        <!-- ── BACK ── -->
         <div class="catalog-section" data-muscle="Back">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-arrows-expand me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Back</span>
-                <span class="catalog-section-count">9 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-arrows-expand me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Back</span><span class="catalog-section-count">9 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Deadlift</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Barbell Row</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
@@ -1056,14 +338,8 @@
                 <div class="exercise-card"><div class="exercise-card-name">Straight-Arm Pulldown</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Cable</span></div></div>
             </div>
         </div>
-
-        <!-- ── SHOULDERS ── -->
         <div class="catalog-section" data-muscle="Shoulders">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-arrows-angle-expand me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Shoulders</span>
-                <span class="catalog-section-count">8 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-arrows-angle-expand me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Shoulders</span><span class="catalog-section-count">8 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Overhead Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Dumbbell Shoulder Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Dumbbells</span></div></div>
@@ -1075,14 +351,8 @@
                 <div class="exercise-card"><div class="exercise-card-name">Cable Lateral Raise</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Cable</span></div></div>
             </div>
         </div>
-
-        <!-- ── BICEPS ── -->
         <div class="catalog-section" data-muscle="Biceps">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-arrow-up me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Biceps</span>
-                <span class="catalog-section-count">7 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-arrow-up me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Biceps</span><span class="catalog-section-count">7 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Barbell Curl</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Dumbbell Curl</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Dumbbells</span></div></div>
@@ -1093,14 +363,8 @@
                 <div class="exercise-card"><div class="exercise-card-name">Concentration Curl</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Dumbbells</span></div></div>
             </div>
         </div>
-
-        <!-- ── TRICEPS ── -->
         <div class="catalog-section" data-muscle="Triceps">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-arrow-down me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Triceps</span>
-                <span class="catalog-section-count">7 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-arrow-down me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Triceps</span><span class="catalog-section-count">7 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Tricep Pushdown</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Cable</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Skull Crusher</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Barbell</span></div></div>
@@ -1111,14 +375,8 @@
                 <div class="exercise-card"><div class="exercise-card-name">Kickback</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Dumbbells</span></div></div>
             </div>
         </div>
-
-        <!-- ── LEGS ── -->
         <div class="catalog-section" data-muscle="Legs">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-person-walking me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Legs</span>
-                <span class="catalog-section-count">8 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-person-walking me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Legs</span><span class="catalog-section-count">8 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Barbell Back Squat</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Front Squat</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
@@ -1130,31 +388,19 @@
                 <div class="exercise-card"><div class="exercise-card-name">Goblet Squat</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Dumbbells</span></div></div>
             </div>
         </div>
-
-        <!-- ── HAMSTRINGS ── -->
         <div class="catalog-section" data-muscle="Hamstrings">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-activity me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Hamstrings</span>
-                <span class="catalog-section-count">6 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-activity me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Hamstrings</span><span class="catalog-section-count">6 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Romanian Deadlift</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Lying Leg Curl</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Machine</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Seated Leg Curl</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Machine</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Nordic Curl</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Bodyweight</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Stiff-Leg Deadlift</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
-                <div class="exercise-card"><div class="exercise-card-name">Good Morning <a href="https://example.com" target="_blank" rel="noopener noreferrer" title="Learn more" style="margin-left:6px;color:var(--gold-dim);font-size:13px;vertical-align:middle;text-decoration:none;"><i class="bi bi-box-arrow-up-right"></i></a></div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
+                <div class="exercise-card"><div class="exercise-card-name">Good Morning</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
             </div>
         </div>
-
-        <!-- ── GLUTES ── -->
         <div class="catalog-section" data-muscle="Glutes">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-chevron-up me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Glutes</span>
-                <span class="catalog-section-count">6 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-chevron-up me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Glutes</span><span class="catalog-section-count">6 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Hip Thrust</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Glute Bridge</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Bodyweight</span></div></div>
@@ -1164,14 +410,8 @@
                 <div class="exercise-card"><div class="exercise-card-name">Step-Up</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Dumbbells</span></div></div>
             </div>
         </div>
-
-        <!-- ── CORE / ABS ── -->
         <div class="catalog-section" data-muscle="Core / Abs">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-grid-1x2 me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Core / Abs</span>
-                <span class="catalog-section-count">8 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-grid-1x2 me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Core / Abs</span><span class="catalog-section-count">8 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Plank</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Bodyweight</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Cable Crunch</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Cable</span></div></div>
@@ -1183,14 +423,8 @@
                 <div class="exercise-card"><div class="exercise-card-name">Pallof Press</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Cable</span></div></div>
             </div>
         </div>
-
-        <!-- ── CALVES ── -->
         <div class="catalog-section" data-muscle="Calves">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-arrow-bar-up me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Calves</span>
-                <span class="catalog-section-count">5 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-arrow-bar-up me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Calves</span><span class="catalog-section-count">5 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Standing Calf Raise</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Machine</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Seated Calf Raise</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Machine</span></div></div>
@@ -1199,14 +433,8 @@
                 <div class="exercise-card"><div class="exercise-card-name">Leg Press Calf Raise</div><div class="exercise-card-meta"><span class="exercise-card-tag isolation">Isolation</span><span class="exercise-card-tag">Machine</span></div></div>
             </div>
         </div>
-
-        <!-- ── FULL BODY ── -->
         <div class="catalog-section" data-muscle="Full Body">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-person me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Full Body</span>
-                <span class="catalog-section-count">6 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-person me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Full Body</span><span class="catalog-section-count">6 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
                 <div class="exercise-card"><div class="exercise-card-name">Burpee</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Bodyweight</span></div></div>
                 <div class="exercise-card"><div class="exercise-card-name">Clean and Press</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Barbell</span></div></div>
@@ -1216,67 +444,36 @@
                 <div class="exercise-card"><div class="exercise-card-name">Turkish Get-Up</div><div class="exercise-card-meta"><span class="exercise-card-tag compound">Compound</span><span class="exercise-card-tag">Kettlebell</span></div></div>
             </div>
         </div>
-
-        <!-- ── CARDIO ── -->
         <div class="catalog-section" data-muscle="Cardio">
-            <div class="catalog-section-header">
-                <span class="catalog-section-title"><i class="bi bi-heart me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Cardio</span>
-                <span class="catalog-section-count">7 exercises</span>
-                <div class="catalog-section-line"></div>
-            </div>
+            <div class="catalog-section-header"><span class="catalog-section-title"><i class="bi bi-heart me-2" style="color:var(--gold);font-size:18px;vertical-align:middle;"></i>Cardio</span><span class="catalog-section-count">7 exercises</span><div class="catalog-section-line"></div></div>
             <div class="exercise-grid">
-                <div class="exercise-card"><div class="exercise-card-name">Treadmill Run</div><div class="exercise-card-meta"><span class="exercise-card-tag cardio">Cardio</span><span class="exercise-card-tag">Machine</span></div></div>
-                <div class="exercise-card"><div class="exercise-card-name">Rowing Machine</div><div class="exercise-card-meta"><span class="exercise-card-tag cardio">Cardio</span><span class="exercise-card-tag">Machine</span></div></div>
-                <div class="exercise-card"><div class="exercise-card-name">Stationary Bike</div><div class="exercise-card-meta"><span class="exercise-card-tag cardio">Cardio</span><span class="exercise-card-tag">Machine</span></div></div>
-                <div class="exercise-card"><div class="exercise-card-name">Jump Rope</div><div class="exercise-card-meta"><span class="exercise-card-tag cardio">Cardio</span><span class="exercise-card-tag">Equipment</span></div></div>
-                <div class="exercise-card"><div class="exercise-card-name">Stair Climber</div><div class="exercise-card-meta"><span class="exercise-card-tag cardio">Cardio</span><span class="exercise-card-tag">Machine</span></div></div>
-                <div class="exercise-card"><div class="exercise-card-name">Battle Ropes</div><div class="exercise-card-meta"><span class="exercise-card-tag cardio">Cardio</span><span class="exercise-card-tag">Equipment</span></div></div>
-                <div class="exercise-card"><div class="exercise-card-name">Box Jump</div><div class="exercise-card-meta"><span class="exercise-card-tag cardio">Cardio</span><span class="exercise-card-tag">Bodyweight</span></div></div>
+                <div class="exercise-card"><div class="exercise-card-name">Treadmill Run</div><div class="exercise-card-meta"><span class="exercise-card-tag">Cardio</span><span class="exercise-card-tag">Machine</span></div></div>
+                <div class="exercise-card"><div class="exercise-card-name">Rowing Machine</div><div class="exercise-card-meta"><span class="exercise-card-tag">Cardio</span><span class="exercise-card-tag">Machine</span></div></div>
+                <div class="exercise-card"><div class="exercise-card-name">Stationary Bike</div><div class="exercise-card-meta"><span class="exercise-card-tag">Cardio</span><span class="exercise-card-tag">Machine</span></div></div>
+                <div class="exercise-card"><div class="exercise-card-name">Jump Rope</div><div class="exercise-card-meta"><span class="exercise-card-tag">Cardio</span><span class="exercise-card-tag">Equipment</span></div></div>
+                <div class="exercise-card"><div class="exercise-card-name">Stair Climber</div><div class="exercise-card-meta"><span class="exercise-card-tag">Cardio</span><span class="exercise-card-tag">Machine</span></div></div>
+                <div class="exercise-card"><div class="exercise-card-name">Battle Ropes</div><div class="exercise-card-meta"><span class="exercise-card-tag">Cardio</span><span class="exercise-card-tag">Equipment</span></div></div>
+                <div class="exercise-card"><div class="exercise-card-name">Box Jump</div><div class="exercise-card-meta"><span class="exercise-card-tag">Cardio</span><span class="exercise-card-tag">Bodyweight</span></div></div>
             </div>
         </div>
-
     </section>
-    <!-- WEIGHT TRACKER PAGE -->
+
     <section id="weight-page">
         <div class="wt-header">
-            <button class="back-btn" id="weight-back">
-                <i class="bi bi-arrow-left"></i> Back to Log
-            </button>
+            <button class="back-btn" id="weight-back"><i class="bi bi-arrow-left"></i> Back to Log</button>
             <div class="wt-title-block">
                 <h2><i class="bi bi-graph-up-arrow me-2" style="color:var(--gold);"></i>Weight Tracker</h2>
                 <p>Log your weight and track your progress over time</p>
             </div>
         </div>
-
-        <!-- Stats row -->
         <div class="wt-stats">
-            <div class="wt-stat">
-                <div class="wt-stat-label">Current</div>
-                <div class="wt-stat-value" id="wt-stat-current">—</div>
-            </div>
-            <div class="wt-stat">
-                <div class="wt-stat-label">Starting</div>
-                <div class="wt-stat-value" id="wt-stat-start">—</div>
-            </div>
-            <div class="wt-stat">
-                <div class="wt-stat-label">Change</div>
-                <div class="wt-stat-value" id="wt-stat-change">—</div>
-            </div>
-            <div class="wt-stat">
-                <div class="wt-stat-label">Lowest</div>
-                <div class="wt-stat-value" id="wt-stat-low">—</div>
-            </div>
-            <div class="wt-stat">
-                <div class="wt-stat-label">Highest</div>
-                <div class="wt-stat-value" id="wt-stat-high">—</div>
-            </div>
-            <div class="wt-stat">
-                <div class="wt-stat-label">Entries</div>
-                <div class="wt-stat-value" id="wt-stat-count">0</div>
-            </div>
+            <div class="wt-stat"><div class="wt-stat-label">Current</div><div class="wt-stat-value" id="wt-stat-current">—</div></div>
+            <div class="wt-stat"><div class="wt-stat-label">Starting</div><div class="wt-stat-value" id="wt-stat-start">—</div></div>
+            <div class="wt-stat"><div class="wt-stat-label">Change</div><div class="wt-stat-value" id="wt-stat-change">—</div></div>
+            <div class="wt-stat"><div class="wt-stat-label">Lowest</div><div class="wt-stat-value" id="wt-stat-low">—</div></div>
+            <div class="wt-stat"><div class="wt-stat-label">Highest</div><div class="wt-stat-value" id="wt-stat-high">—</div></div>
+            <div class="wt-stat"><div class="wt-stat-label">Entries</div><div class="wt-stat-value" id="wt-stat-count">0</div></div>
         </div>
-
-        <!-- Chart -->
         <div class="wt-chart-card">
             <div class="wt-chart-toolbar">
                 <span class="wt-chart-title">Progress</span>
@@ -1293,37 +490,17 @@
                     </div>
                 </div>
             </div>
-            <div class="wt-chart-wrap">
-                <canvas id="wt-chart"></canvas>
-            </div>
+            <div class="wt-chart-wrap"><canvas id="wt-chart"></canvas></div>
         </div>
-
-        <!-- Log form -->
         <div class="wt-log-card">
             <div class="wt-log-title"><i class="bi bi-plus-circle me-2" style="color:var(--gold);"></i>Log Weight</div>
             <div class="wt-log-row">
-                <div class="wt-field">
-                    <label class="form-label">Date</label>
-                    <input type="date" class="form-control" id="wt-date"/>
-                </div>
-                <div class="wt-field">
-                    <label class="form-label">Weight</label>
-                    <input type="number" class="form-control" id="wt-weight" placeholder="e.g. 185" min="50" max="700" step="0.1"/>
-                </div>
-                <div class="wt-field" style="max-width:120px;">
-                    <label class="form-label">Unit</label>
-                    <select class="form-select" id="wt-unit-input">
-                        <option value="lbs">lbs</option>
-                        <option value="kg">kg</option>
-                    </select>
-                </div>
-                <button class="wt-log-btn" id="wt-save-btn">
-                    <i class="bi bi-check2 me-1"></i> Save
-                </button>
+                <div class="wt-field"><label class="form-label">Date</label><input type="date" class="form-control" id="wt-date"/></div>
+                <div class="wt-field"><label class="form-label">Weight</label><input type="number" class="form-control" id="wt-weight" placeholder="e.g. 185" min="50" max="700" step="0.1"/></div>
+                <div class="wt-field" style="max-width:120px;"><label class="form-label">Unit</label><select class="form-select" id="wt-unit-input"><option value="lbs">lbs</option><option value="kg">kg</option></select></div>
+                <button class="wt-log-btn" id="wt-save-btn"><i class="bi bi-check2 me-1"></i> Save</button>
             </div>
         </div>
-
-        <!-- History -->
         <div class="wt-history-card">
             <div class="wt-history-header">
                 <span class="wt-history-title">History</span>
@@ -1332,7 +509,6 @@
             <div id="wt-history-body"></div>
         </div>
     </section>
-
 </div>
 
 <!-- LOG WORKOUT MODAL -->
@@ -1345,27 +521,11 @@
             </div>
             <div class="modal-body">
                 <div class="row g-3">
-                    <div class="col-md-7">
-                        <label class="form-label">Workout Name</label>
-                        <input type="text" class="form-control" id="workout-name" placeholder="e.g. Barbell Back Squat"/>
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label">Target Muscle Group</label>
+                    <div class="col-md-7"><label class="form-label">Workout Name</label><input type="text" class="form-control" id="workout-name" placeholder="e.g. Barbell Back Squat"/></div>
+                    <div class="col-md-5"><label class="form-label">Target Muscle Group</label>
                         <select class="form-select" id="muscle-group">
                             <option value="">Select…</option>
-                            <option>Chest</option>
-                            <option>Back</option>
-                            <option>Shoulders</option>
-                            <option>Biceps</option>
-                            <option>Triceps</option>
-                            <option>Legs</option>
-                            <option>Glutes</option>
-                            <option>Hamstrings</option>
-                            <option>Core / Abs</option>
-                            <option>Calves</option>
-                            <option>Full Body</option>
-                            <option>Cardio</option>
-                            <option>Other</option>
+                            <option>Chest</option><option>Back</option><option>Shoulders</option><option>Biceps</option><option>Triceps</option><option>Legs</option><option>Glutes</option><option>Hamstrings</option><option>Core / Abs</option><option>Calves</option><option>Full Body</option><option>Cardio</option><option>Other</option>
                         </select>
                     </div>
                 </div>
@@ -1375,15 +535,11 @@
                     <span style="font-size:11px;color:var(--text-dim)">Reps · Weight (optional)</span>
                 </div>
                 <div id="sets-builder"></div>
-                <button class="add-set-btn" id="add-set-btn">
-                    <i class="bi bi-plus-lg me-1"></i> Add Set
-                </button>
+                <button class="add-set-btn" id="add-set-btn"><i class="bi bi-plus-lg me-1"></i> Add Set</button>
             </div>
             <div class="modal-footer">
                 <button class="btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-gold" id="save-workout-btn">
-                    <i class="bi bi-check2 me-1"></i> Save Workout
-                </button>
+                <button class="btn-gold" id="save-workout-btn"><i class="bi bi-check2 me-1"></i> Save Workout</button>
             </div>
         </div>
     </div>
@@ -1391,84 +547,38 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-
-
-    // ════════════════════════════════════════════
-    //   TYPES & STORAGE
-    // ════════════════════════════════════════════
     const STORAGE_KEY = 'ironlog_v1';
+    function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; } }
+    function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
 
-    function loadData() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-        catch { return {}; }
-    }
-    function saveData(data) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
-
-    // ════════════════════════════════════════════
-    //   DATE HELPERS
-    // ════════════════════════════════════════════
-    const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    function today() {
-        const d = new Date();
-        return ymd(d.getFullYear(), d.getMonth(), d.getDate());
-    }
-    function ymd(y, m, d) {
-        return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    }
-    function parseYmd(s) {
-        const [y,m,d] = s.split('-').map(Number);
-        return new Date(y, m-1, d);
-    }
-    function daysInMonth(year, month) {
-        return new Date(year, month+1, 0).getDate();
-    }
+    function today() { const d = new Date(); return ymd(d.getFullYear(), d.getMonth(), d.getDate()); }
+    function ymd(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+    function parseYmd(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+    function daysInMonth(year, month) { return new Date(year, month+1, 0).getDate(); }
     function getWeeks(year, month) {
-        const total = daysInMonth(year, month);
-        const weeks = [];
-        let week = [];
+        const total = daysInMonth(year, month); const weeks = []; let week = [];
         for (let d = 1; d <= total; d++) {
             const date = new Date(year, month, d);
             week.push({ day: d, dow: date.getDay(), date: ymd(year, month, d) });
-            if (date.getDay() === 6 || d === total) {
-                weeks.push(week);
-                week = [];
-            }
+            if (date.getDay() === 6 || d === total) { weeks.push(week); week = []; }
         }
         return weeks;
     }
 
-    // ════════════════════════════════════════════
-    //   STATE
-    // ════════════════════════════════════════════
     const now = new Date();
-    let state = {
-        year: now.getFullYear(),
-        month: now.getMonth(),
-        week: null,
-        openDays: new Set(),
-        modalDay: null,
-        editId: null,
-        view: 'tracker', // 'tracker' | 'catalog'
-    };
+    let state = { year: now.getFullYear(), month: now.getMonth(), week: null, openDays: new Set(), modalDay: null, editId: null, view: 'tracker' };
 
     (function initWeek() {
-        const weeks = getWeeks(state.year, state.month);
-        const td = today();
-        for (let i = 0; i < weeks.length; i++) {
-            if (weeks[i].some(d => d.date === td)) { state.week = i; break; }
-        }
+        const weeks = getWeeks(state.year, state.month); const td = today();
+        for (let i = 0; i < weeks.length; i++) { if (weeks[i].some(d => d.date === td)) { state.week = i; break; } }
         if (state.week === null) state.week = 0;
         state.openDays.add(td);
     })();
 
-    // ════════════════════════════════════════════
-    //   VIEW SWITCHING
-    // ════════════════════════════════════════════
     function showView(view) {
         state.view = view;
         document.getElementById('main').style.display = view === 'tracker' ? 'block' : 'none';
@@ -1477,638 +587,214 @@
         if (view === 'weight') renderWeightPage();
     }
 
-    // ════════════════════════════════════════════
-    //   SIDEBAR RENDER
-    // ════════════════════════════════════════════
     function buildMonthNav(navEl, closeOffcanvas) {
-        const data = loadData();
-        const months = [];
+        const data = loadData(); const months = [];
         const curYear = now.getFullYear();
         for (let m = 0; m < 12; m++) months.push({ year: curYear, month: m });
-
         navEl.innerHTML = '';
         months.forEach(({ year, month }) => {
-            const weeks = getWeeks(year, month);
-            const isActiveMonth = state.year === year && state.month === month;
-
+            const weeks = getWeeks(year, month); const isActiveMonth = state.year === year && state.month === month;
             const hdr = document.createElement('div');
             hdr.className = 'month-header' + (isActiveMonth ? ' active open' : '');
             hdr.innerHTML = `<span>${MONTHS[month]} ${year}</span><i class="bi bi-chevron-right chevron"></i>`;
-            hdr.addEventListener('click', () => {
-                state.year = year;
-                state.month = month;
-                state.week = 0;
-                state.openDays.clear();
-                showView('tracker');
-                if (closeOffcanvas) closeOffcanvas();
-                renderSidebar();
-                renderMain();
-            });
+            hdr.addEventListener('click', () => { state.year = year; state.month = month; state.week = 0; state.openDays.clear(); showView('tracker'); if (closeOffcanvas) closeOffcanvas(); renderSidebar(); renderMain(); });
             navEl.appendChild(hdr);
-
             const wkList = document.createElement('div');
             wkList.className = 'week-list' + (isActiveMonth ? ' open' : '');
-
             weeks.forEach((wk, wi) => {
                 const first = wk[0], last = wk[wk.length-1];
                 const wkCount = wk.reduce((s, d) => s + (data[d.date] || []).length, 0);
                 const isActiveWeek = isActiveMonth && state.week === wi;
-
                 const item = document.createElement('div');
                 item.className = 'week-item' + (isActiveWeek ? ' active' : '');
-                item.innerHTML = `
-        <i class="bi bi-calendar3-week" style="font-size:12px;"></i>
-        <span>${SHORT_MONTHS[first.day > 20 && last.day < 8 ? month+1 : month]} ${first.day} – ${last.day}</span>
-        ${wkCount ? `<span class="week-badge">${wkCount}</span>` : ''}
-      `;
-                item.addEventListener('click', () => {
-                    state.year = year;
-                    state.month = month;
-                    state.week = wi;
-                    state.openDays.clear();
-                    const td = today();
-                    if (wk.some(d => d.date === td)) state.openDays.add(td);
-                    showView('tracker');
-                    if (closeOffcanvas) closeOffcanvas();
-                    renderSidebar();
-                    renderMain();
-                });
+                item.innerHTML = `<i class="bi bi-calendar3-week" style="font-size:12px;"></i><span>${SHORT_MONTHS[first.day > 20 && last.day < 8 ? month+1 : month]} ${first.day} – ${last.day}</span>${wkCount ? `<span class="week-badge">${wkCount}</span>` : ''}`;
+                item.addEventListener('click', () => { state.year = year; state.month = month; state.week = wi; state.openDays.clear(); const td = today(); if (wk.some(d => d.date === td)) state.openDays.add(td); showView('tracker'); if (closeOffcanvas) closeOffcanvas(); renderSidebar(); renderMain(); });
                 wkList.appendChild(item);
             });
-
             navEl.appendChild(wkList);
         });
     }
 
     function renderSidebar() {
         buildMonthNav(document.getElementById('month-nav'), null);
-        buildMonthNav(document.getElementById('offcanvas-month-nav'), () => {
-            bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide();
-        });
+        buildMonthNav(document.getElementById('offcanvas-month-nav'), () => { bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide(); });
     }
 
-    // Library dropdown toggle — desktop + offcanvas
     function wireLibraryToggle(toggleId, menuId, chevronId) {
         document.getElementById(toggleId).addEventListener('click', () => {
-            const menu = document.getElementById(menuId);
-            const chevron = document.getElementById(chevronId);
-            const isOpen = menu.classList.contains('open');
-            menu.classList.toggle('open', !isOpen);
-            chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+            const menu = document.getElementById(menuId); const chevron = document.getElementById(chevronId); const isOpen = menu.classList.contains('open');
+            menu.classList.toggle('open', !isOpen); chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
         });
     }
     wireLibraryToggle('library-toggle', 'library-menu', 'library-chevron');
     wireLibraryToggle('oc-library-toggle', 'oc-library-menu', 'oc-library-chevron');
 
-    document.getElementById('open-catalog').addEventListener('click', () => {
-        showView('catalog');
-    });
-    document.getElementById('oc-open-catalog').addEventListener('click', () => {
-        bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide();
-        showView('catalog');
-    });
+    document.getElementById('open-catalog').addEventListener('click', () => showView('catalog'));
+    document.getElementById('oc-open-catalog').addEventListener('click', () => { bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide(); showView('catalog'); });
+    document.getElementById('catalog-back').addEventListener('click', () => showView('tracker'));
+    document.getElementById('open-weight').addEventListener('click', () => showView('weight'));
+    document.getElementById('oc-open-weight').addEventListener('click', () => { bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide(); showView('weight'); });
+    document.getElementById('weight-back').addEventListener('click', () => showView('tracker'));
 
-    document.getElementById('catalog-back').addEventListener('click', () => {
-        showView('tracker');
-    });
-
-    document.getElementById('open-weight').addEventListener('click', () => {
-        showView('weight');
-    });
-    document.getElementById('oc-open-weight').addEventListener('click', () => {
-        bootstrap.Offcanvas.getInstance(document.getElementById('sidebar-offcanvas'))?.hide();
-        showView('weight');
-    });
-    document.getElementById('weight-back').addEventListener('click', () => {
-        showView('tracker');
-    });
-
-
-
-    // ════════════════════════════════════════════
-    //   CATALOG FILTER
-    // ════════════════════════════════════════════
     document.querySelectorAll('.catalog-filters .filter-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.catalog-filters .filter-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             const filter = tab.dataset.filter;
-            document.querySelectorAll('#catalog-page .catalog-section').forEach(sec => {
-                sec.style.display = (filter === 'all' || sec.dataset.muscle === filter) ? '' : 'none';
-            });
+            document.querySelectorAll('#catalog-page .catalog-section').forEach(sec => { sec.style.display = (filter === 'all' || sec.dataset.muscle === filter) ? '' : 'none'; });
         });
     });
 
-    // ════════════════════════════════════════════
-    //   MAIN RENDER
-    // ════════════════════════════════════════════
     function renderMain() {
-        const data = loadData();
-        const weeks = getWeeks(state.year, state.month);
-        const week = weeks[state.week] || weeks[0];
-        const td = today();
-
+        const data = loadData(); const weeks = getWeeks(state.year, state.month); const week = weeks[state.week] || weeks[0]; const td = today();
         const first = week[0], last = week[week.length-1];
-        document.getElementById('view-title').innerHTML =
-            `${MONTHS[state.month]} ${state.year} <span style="color:var(--muted);font-weight:400;font-size:22px;">— Week ${state.week+1}</span>`;
-        document.getElementById('view-sub').textContent =
-            `${DAYS[first.dow]}, ${SHORT_MONTHS[state.month]} ${first.day} – ${DAYS[last.dow]}, ${SHORT_MONTHS[state.month]} ${last.day}`;
-
-        const container = document.getElementById('days-container');
-        container.innerHTML = '';
-
+        document.getElementById('view-title').innerHTML = `${MONTHS[state.month]} ${state.year} <span style="color:var(--muted);font-weight:400;font-size:22px;">— Week ${state.week+1}</span>`;
+        document.getElementById('view-sub').textContent = `${DAYS[first.dow]}, ${SHORT_MONTHS[state.month]} ${first.day} – ${DAYS[last.dow]}, ${SHORT_MONTHS[state.month]} ${last.day}`;
+        const container = document.getElementById('days-container'); container.innerHTML = '';
         week.forEach(({ day, dow, date }) => {
-            const workouts = data[date] || [];
-            const isToday = date === td;
-            const isOpen  = state.openDays.has(date);
+            const workouts = data[date] || []; const isToday = date === td; const isOpen = state.openDays.has(date);
             const muscles = [...new Set(workouts.map(w => w.muscle).filter(Boolean))];
-
-            const card = document.createElement('div');
-            card.className = 'day-card' + (isToday ? ' today' : '');
-
-            card.innerHTML = `
-      <div class="day-card-header">
-        <div class="day-num">${String(day).padStart(2,'0')}</div>
-        <div class="day-label">
-          <div class="name">
-            ${isToday ? '<span class="today-dot"></span>' : ''}${DAYS[dow]}
-          </div>
-          <div class="sub">
-            ${workouts.length ? workouts.length + ' workout' + (workouts.length>1?'s':'') + ' logged' : 'No workouts logged'}
-          </div>
-        </div>
-        ${muscles.length ? `<div class="day-pill-group">${muscles.map(m=>`<span class="muscle-pill">${m}</span>`).join('')}</div>` : ''}
-        <button class="day-toggle-btn ${isOpen ? 'open' : ''}" data-date="${date}">
-          <i class="bi bi-plus-lg"></i>
-        </button>
-      </div>
-      <div class="day-body ${isOpen ? 'open' : ''}" id="body-${date}"></div>
-    `;
-
-            card.querySelector('.day-toggle-btn').addEventListener('click', () => {
-                if (state.openDays.has(date)) state.openDays.delete(date);
-                else state.openDays.add(date);
-                renderMain();
-            });
-
+            const card = document.createElement('div'); card.className = 'day-card' + (isToday ? ' today' : '');
+            card.innerHTML = `<div class="day-card-header"><div class="day-num">${String(day).padStart(2,'0')}</div><div class="day-label"><div class="name">${isToday ? '<span class="today-dot"></span>' : ''}${DAYS[dow]}</div><div class="sub">${workouts.length ? workouts.length + ' workout' + (workouts.length>1?'s':'') + ' logged' : 'No workouts logged'}</div></div>${muscles.length ? `<div class="day-pill-group">${muscles.map(m=>`<span class="muscle-pill">${m}</span>`).join('')}</div>` : ''}<button class="day-toggle-btn ${isOpen ? 'open' : ''}" data-date="${date}"><i class="bi bi-plus-lg"></i></button></div><div class="day-body ${isOpen ? 'open' : ''}" id="body-${date}"></div>`;
+            card.querySelector('.day-toggle-btn').addEventListener('click', () => { if (state.openDays.has(date)) state.openDays.delete(date); else state.openDays.add(date); renderMain(); });
             container.appendChild(card);
             if (isOpen) renderDayBody(date, workouts);
         });
     }
 
     function renderDayBody(date, workouts) {
-        const body = document.getElementById(`body-${date}`);
-        if (!body) return;
-        body.innerHTML = '';
-
-        if (workouts.length === 0) {
-            body.innerHTML = `<p class="empty-day"><i class="bi bi-journal-x me-2"></i>No workouts yet — add your first one below.</p>`;
-        }
-
+        const body = document.getElementById(`body-${date}`); if (!body) return; body.innerHTML = '';
+        if (workouts.length === 0) body.innerHTML = `<p class="empty-day"><i class="bi bi-journal-x me-2"></i>No workouts yet — add your first one below.</p>`;
         workouts.forEach(w => {
-            const entry = document.createElement('div');
-            entry.className = 'workout-entry';
-            const setsRows = w.sets.map((s, i) => `
-      <tr>
-        <td class="set-num">${i+1}</td>
-        <td class="set-reps">${s.reps} rep${s.reps!=1?'s':''}</td>
-        <td class="set-weight ${s.weight ? 'has-weight' : ''}">
-          ${s.weight ? `<i class="bi bi-weights" style="font-size:11px;"></i> ${s.weight} lbs` : '—'}
-        </td>
-      </tr>
-    `).join('');
-
-            entry.innerHTML = `
-      <div class="workout-entry-header">
-        <div class="w-name">${escHtml(w.name)}</div>
-        ${w.muscle ? `<span class="w-muscle">${escHtml(w.muscle)}</span>` : ''}
-        <div class="workout-action-btns">
-          <button class="edit-workout-btn" title="Edit workout" data-id="${w.id}" data-date="${date}">
-            <i class="bi bi-pencil"></i>
-          </button>
-          <button class="delete-workout-btn" title="Delete workout" data-id="${w.id}" data-date="${date}">
-            <i class="bi bi-trash3"></i>
-          </button>
-        </div>
-      </div>
-      <table class="sets-table">
-        <thead><tr><th>Set</th><th>Reps</th><th>Weight</th></tr></thead>
-        <tbody>${setsRows}</tbody>
-      </table>
-    `;
-
-            entry.querySelector('.edit-workout-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                openEditModal(date, w.id);
-            });
-            entry.querySelector('.delete-workout-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteWorkout(date, w.id);
-            });
-
+            const entry = document.createElement('div'); entry.className = 'workout-entry';
+            const setsRows = w.sets.map((s, i) => `<tr><td class="set-num">${i+1}</td><td class="set-reps">${s.reps} rep${s.reps!=1?'s':''}</td><td class="set-weight ${s.weight ? 'has-weight' : ''}">${s.weight ? `<i class="bi bi-weights" style="font-size:11px;"></i> ${s.weight} lbs` : '—'}</td></tr>`).join('');
+            entry.innerHTML = `<div class="workout-entry-header"><div class="w-name">${escHtml(w.name)}</div>${w.muscle ? `<span class="w-muscle">${escHtml(w.muscle)}</span>` : ''}<div class="workout-action-btns"><button class="edit-workout-btn" data-id="${w.id}" data-date="${date}"><i class="bi bi-pencil"></i></button><button class="delete-workout-btn" data-id="${w.id}" data-date="${date}"><i class="bi bi-trash3"></i></button></div></div><table class="sets-table"><thead><tr><th>Set</th><th>Reps</th><th>Weight</th></tr></thead><tbody>${setsRows}</tbody></table>`;
+            entry.querySelector('.edit-workout-btn').addEventListener('click', e => { e.stopPropagation(); openEditModal(date, w.id); });
+            entry.querySelector('.delete-workout-btn').addEventListener('click', e => { e.stopPropagation(); deleteWorkout(date, w.id); });
             body.appendChild(entry);
         });
-
-        const logBtn = document.createElement('button');
-        logBtn.className = 'log-btn';
-        logBtn.innerHTML = `<i class="bi bi-plus-circle me-2"></i>Log Workout`;
-        logBtn.addEventListener('click', () => openModal(date));
-        body.appendChild(logBtn);
+        const logBtn = document.createElement('button'); logBtn.className = 'log-btn'; logBtn.innerHTML = `<i class="bi bi-plus-circle me-2"></i>Log Workout`; logBtn.addEventListener('click', () => openModal(date)); body.appendChild(logBtn);
     }
 
-    // ════════════════════════════════════════════
-    //   MODAL
-    // ════════════════════════════════════════════
     const logModal = new bootstrap.Modal(document.getElementById('log-modal'));
     let setCount = 0;
 
     function openModal(date) {
-        state.modalDay = date;
-        state.editId = null;
-        document.getElementById('workout-name').value = '';
-        document.getElementById('muscle-group').value = '';
+        state.modalDay = date; state.editId = null;
+        document.getElementById('workout-name').value = ''; document.getElementById('muscle-group').value = '';
         document.getElementById('log-modal-title').textContent = `Log Workout — ${formatDate(date)}`;
         document.getElementById('save-workout-btn').innerHTML = `<i class="bi bi-check2 me-1"></i> Save Workout`;
-        setCount = 0;
-        document.getElementById('sets-builder').innerHTML = '';
-        addSetRow();
-        logModal.show();
+        setCount = 0; document.getElementById('sets-builder').innerHTML = ''; addSetRow(); logModal.show();
     }
 
     function openEditModal(date, id) {
-        const data = loadData();
-        const workout = (data[date] || []).find(w => w.id === id);
-        if (!workout) return;
-
-        state.modalDay = date;
-        state.editId = id;
-        document.getElementById('workout-name').value = workout.name;
-        document.getElementById('muscle-group').value = workout.muscle || '';
+        const data = loadData(); const workout = (data[date] || []).find(w => w.id === id); if (!workout) return;
+        state.modalDay = date; state.editId = id;
+        document.getElementById('workout-name').value = workout.name; document.getElementById('muscle-group').value = workout.muscle || '';
         document.getElementById('log-modal-title').textContent = `Edit Workout — ${formatDate(date)}`;
         document.getElementById('save-workout-btn').innerHTML = `<i class="bi bi-check2 me-1"></i> Update Workout`;
-
-        setCount = 0;
-        document.getElementById('sets-builder').innerHTML = '';
-        workout.sets.forEach(s => addSetRow(s.reps, s.weight));
-        logModal.show();
+        setCount = 0; document.getElementById('sets-builder').innerHTML = ''; workout.sets.forEach(s => addSetRow(s.reps, s.weight)); logModal.show();
     }
 
     function addSetRow(prefillReps, prefillWeight) {
         setCount++;
-        const builder = document.getElementById('sets-builder');
-        const row = document.createElement('div');
-        row.className = 'set-row';
-        row.dataset.setIndex = setCount;
-        row.innerHTML = `
-    <div class="set-row-num">${setCount}</div>
-    <input type="number" class="form-control form-control-sm" placeholder="Reps" min="1" data-field="reps" value="${prefillReps ?? ''}"/>
-    <input type="number" class="form-control form-control-sm" placeholder="Weight (lbs)" min="0" step="0.5" data-field="weight" value="${prefillWeight ?? ''}"/>
-    <button class="remove-set-btn" title="Remove set"><i class="bi bi-x-lg"></i></button>
-  `;
-        row.querySelector('.remove-set-btn').addEventListener('click', () => {
-            row.remove();
-            renumberSets();
-        });
-        builder.appendChild(row);
+        const builder = document.getElementById('sets-builder'); const row = document.createElement('div'); row.className = 'set-row'; row.dataset.setIndex = setCount;
+        row.innerHTML = `<div class="set-row-num">${setCount}</div><input type="number" class="form-control form-control-sm" placeholder="Reps" min="1" data-field="reps" value="${prefillReps ?? ''}"/><input type="number" class="form-control form-control-sm" placeholder="Weight (lbs)" min="0" step="0.5" data-field="weight" value="${prefillWeight ?? ''}"/><button class="remove-set-btn" title="Remove set"><i class="bi bi-x-lg"></i></button>`;
+        row.querySelector('.remove-set-btn').addEventListener('click', () => { row.remove(); renumberSets(); }); builder.appendChild(row);
     }
-
-    function renumberSets() {
-        document.querySelectorAll('#sets-builder .set-row').forEach((r, i) => {
-            r.querySelector('.set-row-num').textContent = i + 1;
-        });
-    }
+    function renumberSets() { document.querySelectorAll('#sets-builder .set-row').forEach((r, i) => { r.querySelector('.set-row-num').textContent = i + 1; }); }
 
     document.getElementById('add-set-btn').addEventListener('click', addSetRow);
-
     document.getElementById('save-workout-btn').addEventListener('click', () => {
-        const name   = document.getElementById('workout-name').value.trim();
-        const muscle = document.getElementById('muscle-group').value;
-
-        if (!name) {
-            document.getElementById('workout-name').focus();
-            document.getElementById('workout-name').classList.add('is-invalid');
-            return;
-        }
+        const name = document.getElementById('workout-name').value.trim(); const muscle = document.getElementById('muscle-group').value;
+        if (!name) { document.getElementById('workout-name').focus(); document.getElementById('workout-name').classList.add('is-invalid'); return; }
         document.getElementById('workout-name').classList.remove('is-invalid');
-
-        const setRows = document.querySelectorAll('#sets-builder .set-row');
-        const sets = [];
-        setRows.forEach(row => {
-            const reps   = parseInt(row.querySelector('[data-field="reps"]').value) || 0;
-            const weight = parseFloat(row.querySelector('[data-field="weight"]').value) || null;
-            sets.push({ reps: reps || 1, weight });
-        });
-
-        const data = loadData();
-        if (!data[state.modalDay]) data[state.modalDay] = [];
-
-        if (state.editId) {
-            const idx = data[state.modalDay].findIndex(w => w.id === state.editId);
-            if (idx !== -1) {
-                data[state.modalDay][idx] = { ...data[state.modalDay][idx], name, muscle, sets };
-            }
-        } else {
-            const workout = { id: Date.now().toString(), name, muscle, sets };
-            data[state.modalDay].push(workout);
-        }
-        saveData(data);
-        logModal.hide();
-        state.openDays.add(state.modalDay);
-        renderSidebar();
-        renderMain();
+        const setRows = document.querySelectorAll('#sets-builder .set-row'); const sets = [];
+        setRows.forEach(row => { const reps = parseInt(row.querySelector('[data-field="reps"]').value) || 0; const weight = parseFloat(row.querySelector('[data-field="weight"]').value) || null; sets.push({ reps: reps || 1, weight }); });
+        const data = loadData(); if (!data[state.modalDay]) data[state.modalDay] = [];
+        if (state.editId) { const idx = data[state.modalDay].findIndex(w => w.id === state.editId); if (idx !== -1) data[state.modalDay][idx] = { ...data[state.modalDay][idx], name, muscle, sets }; }
+        else { data[state.modalDay].push({ id: Date.now().toString(), name, muscle, sets }); }
+        saveData(data); logModal.hide(); state.openDays.add(state.modalDay); renderSidebar(); renderMain();
     });
 
     function deleteWorkout(date, id) {
-        const data = loadData();
-        if (!data[date]) return;
-        data[date] = data[date].filter(w => w.id !== id);
-        if (data[date].length === 0) delete data[date];
-        saveData(data);
-        renderSidebar();
-        renderMain();
+        const data = loadData(); if (!data[date]) return; data[date] = data[date].filter(w => w.id !== id); if (data[date].length === 0) delete data[date]; saveData(data); renderSidebar(); renderMain();
     }
+    function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function formatDate(ymdStr) { const d = parseYmd(ymdStr); return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
 
-    // ════════════════════════════════════════════
-    //   UTILS
-    // ════════════════════════════════════════════
-    function escHtml(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-    function formatDate(ymdStr) {
-        const d = parseYmd(ymdStr);
-        return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
-    }
+    renderSidebar(); renderMain();
 
-    // ════════════════════════════════════════════
-    //   INIT
-    // ════════════════════════════════════════════
-    renderSidebar();
-    renderMain();
-
-    // ── Auto-scroll to today's card on page load ──────────────────────────
-    // Uses requestAnimationFrame to wait for the DOM to finish painting
-    // before scrolling, so the card is guaranteed to exist and have layout.
     (function scrollToToday() {
         requestAnimationFrame(function () {
-            var todayCard = document.querySelector('.day-card.today');
-            if (!todayCard) return;
-
+            var todayCard = document.querySelector('.day-card.today'); if (!todayCard) return;
             todayCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            // On mobile the topbar is sticky — compensate for its height so
-            // the card isn't hidden behind it.
             var topbar = document.querySelector('.mobile-topbar');
-            if (topbar && getComputedStyle(topbar).display !== 'none') {
-                var topbarH = topbar.getBoundingClientRect().height;
-                setTimeout(function () {
-                    window.scrollBy({ top: -(topbarH + 12), behavior: 'smooth' });
-                }, 60);
-            }
+            if (topbar && getComputedStyle(topbar).display !== 'none') { var topbarH = topbar.getBoundingClientRect().height; setTimeout(function () { window.scrollBy({ top: -(topbarH + 12), behavior: 'smooth' }); }, 60); }
         });
     })();
 
-    // ════════════════════════════════════════════
-    //   WEIGHT TRACKER
-    // ════════════════════════════════════════════
+    // ── WEIGHT TRACKER ──
     const WT_KEY = 'ironlog_weight_v1';
-    // Entry: { id, date: 'YYYY-MM-DD', valueLbs: number }
+    function wtLoad() { try { return JSON.parse(localStorage.getItem(WT_KEY)) || []; } catch { return []; } }
+    function wtSave(entries) { localStorage.setItem(WT_KEY, JSON.stringify(entries)); }
 
-    function wtLoad() {
-        try { return JSON.parse(localStorage.getItem(WT_KEY)) || []; }
-        catch { return []; }
-    }
-    function wtSave(entries) {
-        localStorage.setItem(WT_KEY, JSON.stringify(entries));
-    }
-
-    let wtUnit = 'lbs';   // display unit
-    let wtRange = 30;     // 0 = all
-    let wtChart = null;
-
+    let wtUnit = 'lbs', wtRange = 30, wtChart = null;
     function lbsToKg(v) { return Math.round(v * 0.453592 * 10) / 10; }
     function kgToLbs(v) { return Math.round(v * 2.20462 * 10) / 10; }
     function displayVal(lbs) { return wtUnit === 'lbs' ? lbs : lbsToKg(lbs); }
     function fmt(lbs) { return displayVal(lbs).toFixed(1); }
-
     function wtFilteredEntries(entries) {
         if (wtRange === 0) return entries;
-        const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - wtRange);
-        const cutoffStr = cutoff.toISOString().slice(0,10);
+        const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - wtRange); const cutoffStr = cutoff.toISOString().slice(0,10);
         return entries.filter(e => e.date >= cutoffStr);
     }
 
     function renderWeightPage() {
-        const allEntries = wtLoad().sort((a,b) => a.date.localeCompare(b.date));
-        const entries = wtFilteredEntries(allEntries);
-
-        // Set today's date as default in the input
-        const dateInput = document.getElementById('wt-date');
-        if (!dateInput.value) dateInput.value = today();
-
-        // ── Stats ──
-        const statCurrent = document.getElementById('wt-stat-current');
-        const statStart   = document.getElementById('wt-stat-start');
-        const statChange  = document.getElementById('wt-stat-change');
-        const statLow     = document.getElementById('wt-stat-low');
-        const statHigh    = document.getElementById('wt-stat-high');
-        const statCount   = document.getElementById('wt-stat-count');
-
-        if (allEntries.length === 0) {
-            [statCurrent, statStart, statChange, statLow, statHigh].forEach(el => {
-                el.textContent = '—'; el.className = 'wt-stat-value';
-            });
-            statCount.textContent = '0';
-        } else {
-            const first = allEntries[0], last = allEntries[allEntries.length - 1];
-            const vals = allEntries.map(e => e.valueLbs);
-            const diff = last.valueLbs - first.valueLbs;
-            const diffDisplay = (diff >= 0 ? '+' : '') + displayVal(Math.abs(diff)).toFixed(1);
-
+        const allEntries = wtLoad().sort((a,b) => a.date.localeCompare(b.date)); const entries = wtFilteredEntries(allEntries);
+        const dateInput = document.getElementById('wt-date'); if (!dateInput.value) dateInput.value = today();
+        const statCurrent = document.getElementById('wt-stat-current'), statStart = document.getElementById('wt-stat-start'), statChange = document.getElementById('wt-stat-change'), statLow = document.getElementById('wt-stat-low'), statHigh = document.getElementById('wt-stat-high'), statCount = document.getElementById('wt-stat-count');
+        if (allEntries.length === 0) { [statCurrent, statStart, statChange, statLow, statHigh].forEach(el => { el.textContent = '—'; el.className = 'wt-stat-value'; }); statCount.textContent = '0'; }
+        else {
+            const first = allEntries[0], last = allEntries[allEntries.length - 1]; const vals = allEntries.map(e => e.valueLbs); const diff = last.valueLbs - first.valueLbs;
             statCurrent.innerHTML = `${fmt(last.valueLbs)}<span class="wt-stat-unit">${wtUnit}</span>`;
-            statStart.innerHTML   = `${fmt(first.valueLbs)}<span class="wt-stat-unit">${wtUnit}</span>`;
-            statChange.innerHTML  = `${diff >= 0 ? '+' : '−'}${displayVal(Math.abs(diff)).toFixed(1)}<span class="wt-stat-unit">${wtUnit}</span>`;
-            statChange.className  = 'wt-stat-value ' + (diff > 0 ? 'positive' : diff < 0 ? 'negative' : '');
-            statLow.innerHTML     = `${fmt(Math.min(...vals))}<span class="wt-stat-unit">${wtUnit}</span>`;
-            statHigh.innerHTML    = `${fmt(Math.max(...vals))}<span class="wt-stat-unit">${wtUnit}</span>`;
-            statCount.textContent = allEntries.length;
+            statStart.innerHTML = `${fmt(first.valueLbs)}<span class="wt-stat-unit">${wtUnit}</span>`;
+            statChange.innerHTML = `${diff >= 0 ? '+' : '−'}${displayVal(Math.abs(diff)).toFixed(1)}<span class="wt-stat-unit">${wtUnit}</span>`; statChange.className = 'wt-stat-value ' + (diff > 0 ? 'positive' : diff < 0 ? 'negative' : '');
+            statLow.innerHTML = `${fmt(Math.min(...vals))}<span class="wt-stat-unit">${wtUnit}</span>`; statHigh.innerHTML = `${fmt(Math.max(...vals))}<span class="wt-stat-unit">${wtUnit}</span>`; statCount.textContent = allEntries.length;
         }
-
-        // ── Chart ──
-        const labels  = entries.map(e => { const d = parseYmd(e.date); return `${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}`; });
-        const values  = entries.map(e => displayVal(e.valueLbs));
-        const canvasEl = document.getElementById('wt-chart');
-
+        const labels = entries.map(e => { const d = parseYmd(e.date); return `${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}`; });
+        const values = entries.map(e => displayVal(e.valueLbs)); const canvasEl = document.getElementById('wt-chart');
         if (wtChart) { wtChart.destroy(); wtChart = null; }
-
-        if (entries.length === 0) {
-            const ctx = canvasEl.getContext('2d');
-            ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-        } else {
-            wtChart = new Chart(canvasEl, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        data: values,
-                        borderColor: '#F0B429',
-                        backgroundColor: 'rgba(240,180,41,0.08)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#F0B429',
-                        pointRadius: entries.length > 60 ? 2 : 4,
-                        pointHoverRadius: 6,
-                        tension: 0.35,
-                        fill: true,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1A1D23',
-                            borderColor: '#2C313A',
-                            borderWidth: 1,
-                            titleColor: '#8892A4',
-                            bodyColor: '#F0B429',
-                            bodyFont: { family: 'Barlow Condensed', size: 16, weight: '700' },
-                            callbacks: {
-                                label: ctx => ` ${ctx.parsed.y.toFixed(1)} ${wtUnit}`
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: 'rgba(44,49,58,0.5)' },
-                            ticks: { color: '#8892A4', font: { size: 11 }, maxTicksLimit: 8 }
-                        },
-                        y: {
-                            grid: { color: 'rgba(44,49,58,0.5)' },
-                            ticks: {
-                                color: '#8892A4',
-                                font: { size: 11 },
-                                callback: v => v.toFixed(1) + ' ' + wtUnit
-                            }
-                        }
-                    }
-                }
-            });
+        if (entries.length === 0) { const ctx = canvasEl.getContext('2d'); ctx.clearRect(0, 0, canvasEl.width, canvasEl.height); }
+        else {
+            wtChart = new Chart(canvasEl, { type: 'line', data: { labels, datasets: [{ data: values, borderColor: '#F0B429', backgroundColor: 'rgba(240,180,41,0.08)', borderWidth: 2, pointBackgroundColor: '#F0B429', pointRadius: entries.length > 60 ? 2 : 4, pointHoverRadius: 6, tension: 0.35, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1A1D23', borderColor: '#2C313A', borderWidth: 1, titleColor: '#8892A4', bodyColor: '#F0B429', bodyFont: { family: 'Barlow Condensed', size: 16, weight: '700' }, callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(1)} ${wtUnit}` } } }, scales: { x: { grid: { color: 'rgba(44,49,58,0.5)' }, ticks: { color: '#8892A4', font: { size: 11 }, maxTicksLimit: 8 } }, y: { grid: { color: 'rgba(44,49,58,0.5)' }, ticks: { color: '#8892A4', font: { size: 11 }, callback: v => v.toFixed(1) + ' ' + wtUnit } } } } });
         }
-
-        // ── History table ──
-        const body = document.getElementById('wt-history-body');
-        const showing = document.getElementById('wt-history-showing');
-        const reversed = [...allEntries].reverse();
-
-        showing.textContent = allEntries.length
-            ? `${allEntries.length} entr${allEntries.length === 1 ? 'y' : 'ies'}`
-            : '';
-
-        if (allEntries.length === 0) {
-            body.innerHTML = `<div class="wt-empty"><i class="bi bi-journal-x me-2"></i>No entries yet — log your first weight above.</div>`;
-            return;
-        }
-
+        const body = document.getElementById('wt-history-body'); const showing = document.getElementById('wt-history-showing'); const reversed = [...allEntries].reverse();
+        showing.textContent = allEntries.length ? `${allEntries.length} entr${allEntries.length === 1 ? 'y' : 'ies'}` : '';
+        if (allEntries.length === 0) { body.innerHTML = `<div class="wt-empty"><i class="bi bi-journal-x me-2"></i>No entries yet — log your first weight above.</div>`; return; }
         let rows = '';
         reversed.forEach((e, i) => {
-            const prev = reversed[i + 1];
-            let deltaHtml = '';
-            if (prev) {
-                const diff = e.valueLbs - prev.valueLbs;
-                if (Math.abs(diff) > 0.01) {
-                    const sign = diff > 0 ? '+' : '−';
-                    const cls  = diff > 0 ? 'up' : 'down';
-                    const icon = diff > 0 ? 'bi-arrow-up' : 'bi-arrow-down';
-                    deltaHtml = `<span class="wt-delta ${cls}"><i class="bi ${icon}"></i> ${sign}${displayVal(Math.abs(diff)).toFixed(1)} ${wtUnit}</span>`;
-                } else {
-                    deltaHtml = `<span class="wt-delta" style="color:var(--muted)">—</span>`;
-                }
-            }
-            const d = parseYmd(e.date);
-            const dateStr = `${DAYS[d.getDay()]}, ${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-            rows += `<tr>
-            <td>${dateStr}</td>
-            <td>${fmt(e.valueLbs)} <span style="font-size:11px;color:var(--text-dim);font-family:Inter,sans-serif;font-weight:400;">${wtUnit}</span></td>
-            <td>${deltaHtml}</td>
-            <td style="text-align:right;">
-                <button class="wt-delete-entry" data-id="${e.id}" title="Delete entry"><i class="bi bi-trash3"></i></button>
-            </td>
-        </tr>`;
+            const prev = reversed[i + 1]; let deltaHtml = '';
+            if (prev) { const diff = e.valueLbs - prev.valueLbs; if (Math.abs(diff) > 0.01) { const sign = diff > 0 ? '+' : '−'; const cls = diff > 0 ? 'up' : 'down'; const icon = diff > 0 ? 'bi-arrow-up' : 'bi-arrow-down'; deltaHtml = `<span class="wt-delta ${cls}"><i class="bi ${icon}"></i> ${sign}${displayVal(Math.abs(diff)).toFixed(1)} ${wtUnit}</span>`; } else { deltaHtml = `<span class="wt-delta" style="color:var(--muted)">—</span>`; } }
+            const d = parseYmd(e.date); const dateStr = `${DAYS[d.getDay()]}, ${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+            rows += `<tr><td>${dateStr}</td><td>${fmt(e.valueLbs)} <span style="font-size:11px;color:var(--text-dim);font-family:Inter,sans-serif;font-weight:400;">${wtUnit}</span></td><td>${deltaHtml}</td><td style="text-align:right;"><button class="wt-delete-entry" data-id="${e.id}" title="Delete entry"><i class="bi bi-trash3"></i></button></td></tr>`;
         });
-
-        body.innerHTML = `<table class="wt-history-table">
-        <thead><tr><th>Date</th><th>Weight</th><th>Change</th><th></th></tr></thead>
-        <tbody>${rows}</tbody>
-    </table>`;
-
-        body.querySelectorAll('.wt-delete-entry').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const entries = wtLoad().filter(e => e.id !== btn.dataset.id);
-                wtSave(entries);
-                renderWeightPage();
-            });
-        });
+        body.innerHTML = `<table class="wt-history-table"><thead><tr><th>Date</th><th>Weight</th><th>Change</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+        body.querySelectorAll('.wt-delete-entry').forEach(btn => { btn.addEventListener('click', () => { const entries = wtLoad().filter(e => e.id !== btn.dataset.id); wtSave(entries); renderWeightPage(); }); });
     }
 
-    // Range toggle
-    document.getElementById('wt-range-group').addEventListener('click', e => {
-        const btn = e.target.closest('.wt-toggle-btn');
-        if (!btn) return;
-        document.querySelectorAll('#wt-range-group .wt-toggle-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        wtRange = parseInt(btn.dataset.range);
-        renderWeightPage();
-    });
-
-    // Unit toggle
-    document.getElementById('wt-unit-group').addEventListener('click', e => {
-        const btn = e.target.closest('.wt-toggle-btn');
-        if (!btn) return;
-        document.querySelectorAll('#wt-unit-group .wt-toggle-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        wtUnit = btn.dataset.unit;
-        document.getElementById('wt-unit-input').value = wtUnit;
-        renderWeightPage();
-    });
-
-    // Sync log form unit to display unit
-    document.getElementById('wt-unit-input').addEventListener('change', e => {
-        const newUnit = e.target.value;
-        document.querySelectorAll('#wt-unit-group .wt-toggle-btn').forEach(b => {
-            b.classList.toggle('active', b.dataset.unit === newUnit);
-        });
-        wtUnit = newUnit;
-        renderWeightPage();
-    });
-
-    // Save entry
+    document.getElementById('wt-range-group').addEventListener('click', e => { const btn = e.target.closest('.wt-toggle-btn'); if (!btn) return; document.querySelectorAll('#wt-range-group .wt-toggle-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); wtRange = parseInt(btn.dataset.range); renderWeightPage(); });
+    document.getElementById('wt-unit-group').addEventListener('click', e => { const btn = e.target.closest('.wt-toggle-btn'); if (!btn) return; document.querySelectorAll('#wt-unit-group .wt-toggle-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); wtUnit = btn.dataset.unit; document.getElementById('wt-unit-input').value = wtUnit; renderWeightPage(); });
+    document.getElementById('wt-unit-input').addEventListener('change', e => { const newUnit = e.target.value; document.querySelectorAll('#wt-unit-group .wt-toggle-btn').forEach(b => { b.classList.toggle('active', b.dataset.unit === newUnit); }); wtUnit = newUnit; renderWeightPage(); });
     document.getElementById('wt-save-btn').addEventListener('click', () => {
-        const date   = document.getElementById('wt-date').value;
-        const rawVal = parseFloat(document.getElementById('wt-weight').value);
-        const unit   = document.getElementById('wt-unit-input').value;
-
-        if (!date || isNaN(rawVal) || rawVal <= 0) {
-            document.getElementById('wt-weight').classList.add('is-invalid');
-            return;
-        }
+        const date = document.getElementById('wt-date').value; const rawVal = parseFloat(document.getElementById('wt-weight').value); const unit = document.getElementById('wt-unit-input').value;
+        if (!date || isNaN(rawVal) || rawVal <= 0) { document.getElementById('wt-weight').classList.add('is-invalid'); return; }
         document.getElementById('wt-weight').classList.remove('is-invalid');
-
-        const valueLbs = unit === 'lbs' ? rawVal : kgToLbs(rawVal);
-        const entries  = wtLoad();
-
-        // If an entry exists for this date, replace it
-        const existingIdx = entries.findIndex(e => e.date === date);
-        const newEntry = { id: Date.now().toString(), date, valueLbs: Math.round(valueLbs * 10) / 10 };
-        if (existingIdx !== -1) entries[existingIdx] = newEntry;
-        else entries.push(newEntry);
-
-        wtSave(entries);
-        document.getElementById('wt-weight').value = '';
-        renderWeightPage();
+        const valueLbs = unit === 'lbs' ? rawVal : kgToLbs(rawVal); const entries = wtLoad();
+        const existingIdx = entries.findIndex(e => e.date === date); const newEntry = { id: Date.now().toString(), date, valueLbs: Math.round(valueLbs * 10) / 10 };
+        if (existingIdx !== -1) entries[existingIdx] = newEntry; else entries.push(newEntry);
+        wtSave(entries); document.getElementById('wt-weight').value = ''; renderWeightPage();
     });
-
 </script>
 </body>
 </html>
