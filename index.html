@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Supabase JS SDK — must load before your own script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
     <style>
         :root {
@@ -15,7 +17,7 @@
             --surface:    #13161B;
             --card:       #1A1D23;
             --border:     #2C313A;
-            --muted: #da9a10;
+            --muted:      #da9a10;
             --text:       #E8EAF0;
             --text-dim:   #8892A4;
             --gold:       #F0B429;
@@ -27,6 +29,149 @@
         }
         * { box-sizing: border-box; }
         body { background: var(--base); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; margin: 0; }
+
+        /* ── AUTH OVERLAY ───────────────────────────────────────── */
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: var(--base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            /* Fade out when hidden */
+            transition: opacity .25s ease;
+        }
+        #auth-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .auth-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 36px 32px 32px;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .auth-brand {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 800;
+            font-size: 32px;
+            letter-spacing: 1px;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .auth-brand i { font-size: 26px; }
+
+        .auth-tagline {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 28px;
+        }
+
+        .auth-heading {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            letter-spacing: .4px;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .auth-field { margin-bottom: 14px; }
+
+        .auth-error {
+            background: rgba(248,113,113,.1);
+            border: 1px solid rgba(248,113,113,.3);
+            color: var(--red);
+            border-radius: 7px;
+            padding: 9px 12px;
+            font-size: 13px;
+            margin-bottom: 14px;
+            display: none;
+        }
+        .auth-error.visible { display: block; }
+
+        .auth-submit-btn {
+            background: var(--gold);
+            color: #0D0F12;
+            border: none;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 800;
+            font-size: 17px;
+            letter-spacing: .5px;
+            padding: 11px 24px;
+            border-radius: 7px;
+            cursor: pointer;
+            width: 100%;
+            transition: background .15s, opacity .15s;
+            margin-bottom: 16px;
+        }
+        .auth-submit-btn:hover { background: #f5c44a; }
+        .auth-submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+        .auth-toggle {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+        .auth-toggle button {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0 2px;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .auth-toggle button:hover { color: #f5c44a; }
+
+        .auth-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 20px 0;
+        }
+
+        /* ── LOGOUT BUTTON in sidebar ───────────────────────────── */
+        .sidebar-logout {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: 7px;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color .15s, color .15s;
+        }
+        .logout-btn:hover { border-color: var(--red); color: var(--red); }
+        .logout-user-email {
+            font-size: 11px;
+            color: var(--text-dim);
+            padding: 0 20px 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── APP (existing styles below, unchanged) ─────────────── */
         #app { display: flex; min-height: 100vh; }
         #sidebar { width: 260px; min-width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
         .sidebar-brand { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); }
@@ -93,7 +238,7 @@
         .form-label { font-size: 11px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
         .form-control, .form-select { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 7px; font-size: 14px; transition: border-color .15s, box-shadow .15s; }
         .form-control:focus, .form-select:focus { background: var(--surface); border-color: var(--gold); color: var(--text); box-shadow: 0 0 0 3px rgba(240,180,41,.15); }
-        .form-control::placeholder { color: var(--muted); }
+        .form-control::placeholder { color: var(--text-dim); }
         .form-select option { background: var(--card); }
         #sets-builder { margin-top: 6px; }
         .set-row { display: grid; grid-template-columns: 30px 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
@@ -139,12 +284,10 @@
         .mobile-topbar .brand-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; color: var(--gold); letter-spacing: 1px; }
         .hamburger-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); border-radius: 7px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: border-color .15s, color .15s; }
         .hamburger-btn:hover { border-color: var(--muted); color: var(--text); }
-        /* ── OFFCANVAS FIXES ── */
         .offcanvas { background: var(--surface) !important; border-right: 1px solid var(--border) !important; width: 280px !important; display: flex !important; flex-direction: column !important; }
         .offcanvas-header { border-bottom: 1px solid var(--border); padding: 18px 20px 14px; flex-shrink: 0; }
         .offcanvas-header .offcanvas-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px; color: var(--gold); letter-spacing: 1px; }
         .offcanvas-header .btn-close { filter: invert(1) brightness(0.6); }
-        /* KEY FIX: offcanvas-body scrolls, month nav is inside it */
         .offcanvas-body { padding: 0; overflow-y: auto; flex: 1; min-height: 0; }
         @media (max-width: 640px) {
             #sidebar { display: none; }
@@ -204,6 +347,53 @@
 </head>
 <body>
 
+<!-- ══════════════════════════════════════════════════════════
+     AUTH OVERLAY
+     Covers the entire screen. Hidden once a session is confirmed.
+     ══════════════════════════════════════════════════════════ -->
+<div id="auth-overlay">
+    <div class="auth-card">
+        <!-- Brand -->
+        <div class="auth-brand">
+            <i class="bi bi-lightning-fill"></i> IRON LOG
+        </div>
+        <p class="auth-tagline">Your private workout tracker</p>
+
+        <hr class="auth-divider"/>
+
+        <!-- Heading switches between Sign In / Create Account -->
+        <div class="auth-heading" id="auth-heading">Sign in to continue</div>
+
+        <!-- Error banner -->
+        <div class="auth-error" id="auth-error"></div>
+
+        <!-- Email -->
+        <div class="auth-field">
+            <label class="form-label" for="auth-email">Email</label>
+            <input type="email" class="form-control" id="auth-email" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+
+        <!-- Password -->
+        <div class="auth-field">
+            <label class="form-label" for="auth-password">Password</label>
+            <input type="password" class="form-control" id="auth-password" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+
+        <!-- Submit -->
+        <button class="auth-submit-btn" id="auth-submit-btn">
+            <i class="bi bi-box-arrow-in-right me-1"></i>
+            <span id="auth-submit-label">Sign In</span>
+        </button>
+
+        <!-- Toggle between sign in / sign up -->
+        <div class="auth-toggle">
+            <span id="auth-toggle-text">Don't have an account?</span>
+            <button id="auth-mode-toggle">Create one</button>
+        </div>
+    </div>
+</div>
+
+
 <!-- MOBILE TOPBAR -->
 <div class="mobile-topbar">
     <span class="brand-name"><i class="bi bi-lightning-fill" style="font-size:17px;vertical-align:middle;margin-right:3px;"></i>IRON LOG</span>
@@ -213,7 +403,6 @@
 </div>
 
 <!-- OFFCANVAS SIDEBAR (mobile) -->
-<!-- FIX: offcanvas-month-nav is now INSIDE offcanvas-body so it scrolls with the rest -->
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar-offcanvas" aria-labelledby="offcanvas-label">
     <div class="offcanvas-header">
         <span class="offcanvas-title" id="offcanvas-label"><i class="bi bi-lightning-fill" style="font-size:17px;vertical-align:middle;margin-right:4px;"></i>IRON LOG</span>
@@ -248,8 +437,15 @@
                 </div>
             </div>
         </div>
-        <!-- Month nav is INSIDE offcanvas-body — this is the key fix -->
         <div class="month-nav" id="offcanvas-month-nav"></div>
+
+        <!-- Logout — mobile offcanvas -->
+        <div class="sidebar-logout">
+            <div class="logout-user-email" id="oc-user-email"></div>
+            <button class="logout-btn" id="oc-logout-btn">
+                <i class="bi bi-box-arrow-left"></i> Sign Out
+            </button>
+        </div>
     </div>
 </div>
 
@@ -288,6 +484,14 @@
             </div>
         </div>
         <div class="month-nav" id="month-nav"></div>
+
+        <!-- Logout — desktop sidebar -->
+        <div class="sidebar-logout">
+            <div class="logout-user-email" id="sidebar-user-email"></div>
+            <button class="logout-btn" id="sidebar-logout-btn">
+                <i class="bi bi-box-arrow-left"></i> Sign Out
+            </button>
+        </div>
     </nav>
 
     <main id="main">
@@ -557,6 +761,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // ════════════════════════════════════════════
+    //   SUPABASE INIT
+    //   Replace the two placeholder strings below
+    //   with your real project URL and anon key.
+    // ════════════════════════════════════════════
+    const SUPABASE_URL  = 'https://scxvkivozjtfrnlhxbqt.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeHZraXZvemp0ZnJubGh4YnF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzYyMDQsImV4cCI6MjA5NzA1MjIwNH0.8Xo8iKoj7cSezZh1Uj8KLijIJXnunouz02vGOdx9-Rk';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // ════════════════════════════════════════════
+    //   EXISTING APP LOGIC (unchanged)
+    // ════════════════════════════════════════════
     const STORAGE_KEY = 'ironlog_v1';
     function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; } }
     function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
@@ -805,6 +1021,119 @@
         if (existingIdx !== -1) entries[existingIdx] = newEntry; else entries.push(newEntry);
         wtSave(entries); document.getElementById('wt-weight').value = ''; renderWeightPage();
     });
+
+
+    // ════════════════════════════════════════════
+    //   AUTH
+    // ════════════════════════════════════════════
+
+    const authOverlay  = document.getElementById('auth-overlay');
+    const authHeading  = document.getElementById('auth-heading');
+    const authError    = document.getElementById('auth-error');
+    const authEmail    = document.getElementById('auth-email');
+    const authPassword = document.getElementById('auth-password');
+    const authSubmit   = document.getElementById('auth-submit-btn');
+    const authLabel    = document.getElementById('auth-submit-label');
+    const authToggle   = document.getElementById('auth-mode-toggle');
+    const authToggleTxt = document.getElementById('auth-toggle-text');
+
+    let authMode = 'signin'; // 'signin' | 'signup'
+
+    // Switch between Sign In and Create Account
+    authToggle.addEventListener('click', () => {
+        authMode = authMode === 'signin' ? 'signup' : 'signin';
+        authError.classList.remove('visible');
+        if (authMode === 'signup') {
+            authHeading.textContent   = 'Create your account';
+            authLabel.textContent     = 'Create Account';
+            authToggleTxt.textContent = 'Already have an account?';
+            authToggle.textContent    = 'Sign in';
+            authSubmit.querySelector('i').className = 'bi bi-person-plus me-1';
+        } else {
+            authHeading.textContent   = 'Sign in to continue';
+            authLabel.textContent     = 'Sign In';
+            authToggleTxt.textContent = "Don't have an account?";
+            authToggle.textContent    = 'Create one';
+            authSubmit.querySelector('i').className = 'bi bi-box-arrow-in-right me-1';
+        }
+    });
+
+    // Show error in the auth card
+    function showAuthError(msg) {
+        authError.textContent = msg;
+        authError.classList.add('visible');
+    }
+
+    // Allow Enter key to submit the auth form
+    [authEmail, authPassword].forEach(el => {
+        el.addEventListener('keydown', e => { if (e.key === 'Enter') authSubmit.click(); });
+    });
+
+    // Submit: sign in or sign up
+    authSubmit.addEventListener('click', async () => {
+        const email    = authEmail.value.trim();
+        const password = authPassword.value;
+        authError.classList.remove('visible');
+
+        if (!email || !password) { showAuthError('Please enter your email and password.'); return; }
+        if (authMode === 'signup' && password.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
+
+        authSubmit.disabled = true;
+        authLabel.textContent = authMode === 'signin' ? 'Signing in…' : 'Creating account…';
+
+        try {
+            if (authMode === 'signin') {
+                const { error } = await sb.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+            } else {
+                const { error } = await sb.auth.signUp({ email, password });
+                if (error) throw error;
+                // Supabase may require email confirmation depending on your project settings.
+                // If so, show a friendly message instead of immediately hiding the overlay.
+                showAuthError('Account created! Check your email to confirm, then sign in.');
+                authSubmit.disabled = false;
+                authLabel.textContent = 'Create Account';
+                return;
+            }
+        } catch (err) {
+            showAuthError(err.message || 'Something went wrong. Please try again.');
+            authSubmit.disabled = false;
+            authLabel.textContent = authMode === 'signin' ? 'Sign In' : 'Create Account';
+        }
+    });
+
+    // Show/hide the overlay based on session state
+    // onAuthStateChange fires immediately with the current session on page load,
+    // so this handles both "returning user" and "just logged in" cases.
+    function setUserUI(user) {
+        if (user) {
+            // Logged in — hide overlay, show app
+            authOverlay.classList.add('hidden');
+            // Show email in sidebar logout areas
+            const emailDisplay = user.email || '';
+            document.getElementById('sidebar-user-email').textContent = emailDisplay;
+            document.getElementById('oc-user-email').textContent = emailDisplay;
+        } else {
+            // Logged out — show overlay
+            authOverlay.classList.remove('hidden');
+            authSubmit.disabled = false;
+            authLabel.textContent = 'Sign In';
+            authPassword.value = '';
+        }
+    }
+
+    sb.auth.onAuthStateChange((_event, session) => {
+        setUserUI(session?.user ?? null);
+    });
+
+    // Logout buttons (desktop sidebar + mobile offcanvas)
+    async function handleLogout() {
+        await sb.auth.signOut();
+        // onAuthStateChange will fire and call setUserUI(null) automatically
+    }
+    document.getElementById('sidebar-logout-btn').addEventListener('click', handleLogout);
+    document.getElementById('oc-logout-btn').addEventListener('click', handleLogout);
+
 </script>
 </body>
 </html>
